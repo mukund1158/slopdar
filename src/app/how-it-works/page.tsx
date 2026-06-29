@@ -79,7 +79,7 @@ export default function HowItWorksPage() {
         <div style={{ ...card, overflow: "hidden" }}>
           {TIERS.map((t, i) => (
             <div key={t.name} style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 20px", borderTop: i === 0 ? "none" : "1px solid var(--line)" }}>
-              <span style={{ width: 54, fontWeight: 900, fontSize: 15, color: t.color }}>{t.range}</span>
+              <span style={{ width: 60, fontWeight: 900, fontSize: 15, color: t.color }}>{t.range}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 800, fontSize: 15 }}>{t.name}</div>
                 <div style={{ fontSize: 13, color: "var(--mut)" }}>{t.desc}</div>
