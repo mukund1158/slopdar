@@ -6,6 +6,8 @@ import { copySignals } from "./copy";
 import { layoutSignals } from "./layout";
 import { leftoverSignals } from "./leftovers";
 import { stackSignals } from "./stack";
+import { qualitySignals } from "./quality";
+import { humanSignals } from "./human";
 
 export const ALL_SIGNALS: SignalRule[] = [
   ...fingerprintSignals,
@@ -14,6 +16,8 @@ export const ALL_SIGNALS: SignalRule[] = [
   ...layoutSignals,
   ...leftoverSignals,
   ...stackSignals,
+  ...qualitySignals,
+  ...humanSignals,
 ];
 
 // Guard against duplicate ids (would corrupt "the receipts").

@@ -151,7 +151,7 @@ export default function SlopdarApp() {
   const rset = useMemo(() => roastSetFor(tier.label), [tier.label]);
   const roast = toneMode === "nice" ? rset.nice : rset.roasts[roastIdx % rset.roasts.length];
   const ang = (displayScore / 100) * 360;
-  const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight));
+  const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight).filter((w) => w > 0));
   const isSlop = screen === "result" && (result?.score ?? 0) > 75;
 
   // ── leaderboard (client-side filter/paginate over fetched rows) ──────────
@@ -344,6 +344,8 @@ export default function SlopdarApp() {
   const renderResult = () => {
     if (!result) return null;
     const signals = result.signals ?? [];
+    const tells = signals.filter((s) => s.weight > 0);
+    const humanHits = signals.filter((s) => s.weight < 0);
     return (
       <>
         <section style={{ position: "relative", background: tier.tint, borderBottom: "2px solid var(--ink)" }}>
@@ -413,11 +415,11 @@ export default function SlopdarApp() {
           <div style={{ marginTop: 18, ...card, borderRadius: 16, padding: "22px 24px", boxShadow: "0 5px 0 rgba(0,0,0,.08)" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "2px solid var(--ink)", paddingBottom: 13 }}>
               <h2 style={{ fontWeight: 900, fontSize: 22, letterSpacing: "-.02em", margin: 0 }}>The receipts</h2>
-              <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>{signals.length} tells found</span>
+              <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>{tells.length} tells found</span>
             </div>
-            {signals.length === 0 ? (
+            {tells.length === 0 ? (
               <p style={{ margin: "16px 0 0", fontSize: 15, color: "var(--ink2)", lineHeight: 1.55 }}>No tells found. Suspiciously clean. A human probably touched this. Respect.</p>
-            ) : signals.map((r, i) => (
+            ) : tells.map((r, i) => (
               <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
                 <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 22 }}>{String(i + 1).padStart(2, "0")}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -429,6 +431,27 @@ export default function SlopdarApp() {
                 <span style={{ fontWeight: 900, fontSize: 17, minWidth: 46, textAlign: "right", color: tier.color }}>+{r.weight}</span>
               </div>
             ))}
+
+            {humanHits.length > 0 && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "20px 0 2px" }}>
+                  <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "#10B95E", fontWeight: 600 }}>Signs a human was here</span>
+                  <span style={{ flex: 1, height: 2, background: "var(--line)" }} />
+                  <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--mut)" }}>lowers the score</span>
+                </div>
+                {humanHits.map((r) => (
+                  <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
+                    <span style={{ fontFamily: MONO, fontSize: 15, color: "#10B95E", minWidth: 22, textAlign: "center" }}>✓</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink)" }}>{r.label}</div>
+                      <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 2 }}>{r.description}</div>
+                    </div>
+                    <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", minWidth: 108, textAlign: "right" }}>{categoryLabel(r.category)}</span>
+                    <span style={{ fontWeight: 900, fontSize: 17, minWidth: 46, textAlign: "right", color: "#10B95E" }}>{r.weight}</span>
+                  </div>
+                ))}
+              </>
+            )}
             <p style={{ margin: "15px 0 0", fontSize: 13, color: "var(--mut)", lineHeight: 1.55, maxWidth: 640 }}>It&apos;s all in good fun. Slopdar reports <span style={{ color: "var(--ink2)", fontWeight: 600 }}>signals, not proof</span>. A high score means a site smells templated, not that no human was ever involved.</p>
           </div>
         </section>
@@ -566,7 +589,7 @@ export default function SlopdarApp() {
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: MONO, fontSize: "2cqw", color: "var(--ink2)", borderTop: "2px solid var(--ink)", paddingTop: "3%" }}>
-                <span>{result.signals.length} tells · roasted by Slopdar</span>
+                <span>{result.signals.filter((s) => s.weight > 0).length} tells · roasted by Slopdar</span>
                 <span style={{ color: "var(--brand)", fontWeight: 600 }}>slopdar.com</span>
               </div>
             </div>
