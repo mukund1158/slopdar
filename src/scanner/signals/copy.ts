@@ -27,7 +27,7 @@ export const copySignals: SignalRule[] = [
     category: "copy",
     weight: 10,
     label: "High em-dash density",
-    description: "Em-dashes (—) appear unusually often — a known LLM writing tic.",
+    description: "Em-dashes show up unusually often. A classic LLM writing tic.",
     test: (ctx) => {
       const text = visibleText(ctx);
       if (text.length < 400) return null; // too little copy to judge

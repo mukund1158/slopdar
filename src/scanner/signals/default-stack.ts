@@ -43,7 +43,7 @@ export const defaultStackSignals: SignalRule[] = [
     category: "default-stack",
     weight: 14,
     label: "Tailwind via CDN",
-    description: "Tailwind loaded from the play CDN — a prototyping/quick-build tell.",
+    description: "Tailwind loaded from the play CDN: a prototyping/quick-build tell.",
     test: (ctx) => (rawHtml(ctx).includes("cdn.tailwindcss.com") ? { evidence: "cdn.tailwindcss.com" } : null),
   },
   {
