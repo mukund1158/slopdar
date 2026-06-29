@@ -1,0 +1,91 @@
+// Slopdar data model — see docs/05-architecture.md
+// Provider: MySQL 8 (utf8mb4 set at the server level via docker-compose).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// One scan of one URL. `slug` is the public, shareable id (e.g. /r/stripe.com).
+model Check {
+  id          String   @id @default(cuid())
+  url         String   @db.VarChar(2048) // full URL (not indexed — can exceed the utf8mb4 key limit)
+  urlHash     String   @unique @db.Char(64) // sha256(url) — the canonical uniqueness key
+  slug        String   @unique @db.VarChar(255)
+  host        String   @db.VarChar(255)
+  finalUrl    String?  @db.VarChar(2048)
+  score       Int // 0–100 Slop Score
+  tier        String   @db.VarChar(64) // Hand-Crafted | Suspiciously Clean | Vibe-Coded | Pure Slop
+  screenshot  String?  @db.VarChar(512) // public path or null if capture failed
+  title       String?  @db.VarChar(512)
+  scanError   String?  @db.Text // populated when the scan partially failed
+  checkCount  Int      @default(1) // how many times this URL has been scanned
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  signals    Signal[]
+  techStacks TechStack[]
+  savedBy    SavedSite[]
+
+  @@index([score])
+  @@index([createdAt])
+}
+
+/// A matched detection signal — "the receipts" shown on the result page.
+model Signal {
+  id          String   @id @default(cuid())
+  checkId     String
+  signalId    String   @db.VarChar(128) // stable rule id, e.g. "fingerprint.v0"
+  category    String   @db.VarChar(64)
+  label       String   @db.VarChar(255)
+  description String   @db.Text
+  weight      Int
+  evidence    String?  @db.Text // snippet / matched value, when available
+
+  check Check @relation(fields: [checkId], references: [id], onDelete: Cascade)
+
+  @@index([checkId])
+}
+
+/// Detected technology (Wappalyzer-style).
+model TechStack {
+  id         String  @id @default(cuid())
+  checkId    String
+  name       String  @db.VarChar(128)
+  category   String? @db.VarChar(64)
+  confidence Int     @default(100)
+
+  check Check @relation(fields: [checkId], references: [id], onDelete: Cascade)
+
+  @@unique([checkId, name])
+  @@index([checkId])
+}
+
+/// Optional account (Google via Auth.js — wired up in a later phase).
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique @db.VarChar(320)
+  name      String?  @db.VarChar(255)
+  image     String?  @db.VarChar(512)
+  createdAt DateTime @default(now())
+
+  saved SavedSite[]
+}
+
+/// A site a logged-in user saved to their profile.
+model SavedSite {
+  id        String   @id @default(cuid())
+  userId    String
+  checkId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  check Check @relation(fields: [checkId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, checkId])
+  @@index([userId])
+}

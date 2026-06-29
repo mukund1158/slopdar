@@ -1,0 +1,391 @@
+<title>Slopdar — Editorial Mockup</title>
+<meta name="description" content="Editorial/studio design mockup for Slopdar: a critic's second opinion on the web." />
+
+<style>
+  :root {
+    --ink: #1b1a17;
+    --paper: #f7f6f2;
+    --grey: #6c6960;
+    --faint: #9b988e;
+    --rule: #e3e1d8;
+    --rule-strong: #cfccc1;
+    --accent: #cf2a1a; /* red pen — the only accent */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --maxw: 1060px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
+
+  a { color: inherit; }
+
+  .kicker {
+    font-family: var(--sans); font-size: 12px; font-weight: 600;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--accent);
+  }
+  .label {
+    font-family: var(--sans); font-size: 11.5px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+  }
+
+  /* ---------- masthead ---------- */
+  header.top { border-bottom: 1px solid var(--rule-strong); }
+  header.top .wrap { display: flex; align-items: baseline; justify-content: space-between; padding: 22px 32px; gap: 24px; }
+  .wordmark { font-family: var(--serif); font-size: 23px; font-weight: 600; letter-spacing: -.01em; }
+  .wordmark .dot { color: var(--accent); }
+  nav.nav { display: flex; gap: 26px; }
+  nav.nav button, nav.nav a {
+    font-family: var(--sans); font-size: 13.5px; color: var(--grey); background: none; border: 0;
+    padding: 0; cursor: pointer; letter-spacing: .01em; position: relative;
+  }
+  nav.nav button[aria-current="true"] { color: var(--ink); }
+  nav.nav button[aria-current="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -23px; height: 2px; background: var(--accent); }
+  nav.nav button:focus-visible, nav.nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+  /* ---------- views ---------- */
+  .view { display: none; }
+  .view.is-active { display: block; }
+
+  .reveal { opacity: 0; transform: translateY(14px); }
+  .view.is-active .reveal { animation: rise .7s cubic-bezier(.2,.75,.2,1) forwards; }
+  .view.is-active .reveal.d1 { animation-delay: .05s; }
+  .view.is-active .reveal.d2 { animation-delay: .14s; }
+  .view.is-active .reveal.d3 { animation-delay: .24s; }
+  .view.is-active .reveal.d4 { animation-delay: .34s; }
+  .view.is-active .reveal.d5 { animation-delay: .46s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* ================= HOME ================= */
+  .hero { padding: 76px 0 30px; max-width: 760px; }
+  .hero h1 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(52px, 11vw, 116px); line-height: .95; letter-spacing: -.02em;
+    margin: 20px 0 0; text-wrap: balance;
+  }
+  .hero h1 .mark { position: relative; display: inline-block; white-space: nowrap; color: var(--accent); }
+  .hero h1 .mark svg { position: absolute; left: -10%; top: -16%; width: 120%; height: 132%; overflow: visible; pointer-events: none; }
+  .hero h1 .mark svg path { fill: none; stroke: var(--accent); stroke-width: 3.4; stroke-linecap: round; }
+
+  .lede { font-family: var(--serif); font-size: clamp(19px, 2.4vw, 23px); line-height: 1.45; color: var(--ink); max-width: 30ch; margin: 26px 0 0; }
+
+  form.ask { margin-top: 40px; max-width: 560px; }
+  form.ask .field { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+  form.ask .scheme { font-family: var(--mono); font-size: 14px; color: var(--faint); }
+  form.ask input { flex: 1; min-width: 0; border: 0; background: none; font-family: var(--mono); font-size: 16px; color: var(--ink); padding: 2px 0; }
+  form.ask input:focus { outline: none; }
+  form.ask button {
+    font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: .04em;
+    background: none; border: 0; color: var(--accent); cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  form.ask button .arr { transition: transform .18s ease; }
+  form.ask button:hover .arr { transform: translateX(4px); }
+  form.ask button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  form.ask .note { margin-top: 12px; font-size: 13px; color: var(--faint); }
+
+  /* recently judged — an index/ledger, not cards */
+  .ledger { padding: 50px 0 90px; }
+  .ledger .hd { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--rule-strong); padding-bottom: 12px; }
+  .ledger .hd .cols { display: none; }
+  .ledger ol { list-style: none; margin: 0; padding: 0; }
+  .ledger li {
+    display: grid; grid-template-columns: 1fr auto 168px; align-items: baseline; gap: 20px;
+    padding: 20px 0; border-bottom: 1px solid var(--rule); cursor: pointer;
+  }
+  .ledger li:hover .site { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--accent); }
+  .ledger .site { font-family: var(--serif); font-size: 22px; }
+  .ledger .score { font-family: var(--serif); font-size: 26px; font-variant-numeric: tabular-nums; text-align: right; }
+  .ledger li.slop .score { color: var(--accent); }
+  .ledger .tier { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--grey); text-align: right; }
+  @media (max-width: 620px) {
+    .ledger li { grid-template-columns: 1fr auto; }
+    .ledger .tier { display: none; }
+  }
+
+  /* ================= RESULT ================= */
+  .result { padding: 44px 0 96px; }
+  .back { font-family: var(--sans); font-size: 13.5px; color: var(--grey); background: none; border: 0; cursor: pointer; padding: 0; }
+  .back:hover { color: var(--accent); }
+
+  .review { display: grid; grid-template-columns: minmax(0,1fr) 312px; gap: 56px; align-items: start; margin-top: 30px; }
+  @media (max-width: 880px) { .review { grid-template-columns: 1fr; gap: 40px; } }
+
+  .subject { font-family: var(--serif); font-size: clamp(30px, 5vw, 46px); font-weight: 600; letter-spacing: -.015em; line-height: 1.04; margin: 12px 0 0; word-break: break-word; }
+
+  .scoreblock { display: flex; align-items: flex-end; gap: 18px; margin: 30px 0 0; }
+  .scoreblock .big { font-family: var(--serif); font-weight: 600; font-size: clamp(96px, 18vw, 150px); line-height: .8; letter-spacing: -.03em; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .scoreblock .of { font-family: var(--serif); font-size: 26px; color: var(--faint); margin-bottom: 16px; }
+  .scoreblock .tierwrap { margin-bottom: 18px; }
+  .scoreblock .tierwrap .tname { font-family: var(--sans); font-weight: 600; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+
+  .gauge { margin: 26px 0 0; max-width: 520px; }
+  .gauge .line { position: relative; height: 1px; background: var(--rule-strong); }
+  .gauge .line .pip { position: absolute; top: -4px; width: 1px; height: 9px; background: var(--rule-strong); }
+  .gauge .line .now { position: absolute; top: -7px; width: 2px; height: 15px; background: var(--accent); left: 0; transition: left 1s cubic-bezier(.2,.8,.2,1); }
+  .gauge .ends { display: flex; justify-content: space-between; margin-top: 9px; font-family: var(--sans); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+
+  .verdict { margin: 40px 0 0; max-width: 30ch; }
+  .verdict .q { font-family: var(--serif); font-style: italic; font-size: clamp(22px, 3.2vw, 30px); line-height: 1.3; text-wrap: pretty; }
+  .verdict .q::before { content: "\201C"; color: var(--accent); }
+  .verdict .q::after { content: "\201D"; color: var(--accent); }
+  .tone { display: inline-flex; gap: 18px; margin-top: 18px; }
+  .tone button { font-family: var(--sans); font-size: 12.5px; letter-spacing: .04em; color: var(--faint); background: none; border: 0; cursor: pointer; padding: 0; }
+  .tone button[aria-pressed="true"] { color: var(--ink); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
+
+  /* evidence — a numbered editorial list */
+  .evidence { margin: 54px 0 0; }
+  .evidence > .label { display: block; margin-bottom: 6px; }
+  .evidence ol { list-style: none; counter-reset: ev; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+  .evidence li { counter-increment: ev; display: grid; grid-template-columns: 40px 1fr auto; gap: 4px 20px; padding: 22px 0; border-bottom: 1px solid var(--rule); }
+  .evidence li::before { content: counter(ev, decimal-leading-zero); font-family: var(--mono); font-size: 13px; color: var(--accent); padding-top: 4px; }
+  .evidence .tell { font-family: var(--serif); font-size: 21px; }
+  .evidence .cat { font-family: var(--sans); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); grid-column: 2; margin-top: 4px; }
+  .evidence .ev { font-family: var(--mono); font-size: 13px; color: var(--grey); grid-column: 2; margin-top: 8px; }
+  .evidence .w { font-family: var(--serif); font-size: 19px; color: var(--ink); font-variant-numeric: tabular-nums; align-self: start; }
+  .evidence .total { display: flex; justify-content: space-between; align-items: baseline; padding: 20px 0 0; }
+  .evidence .total .t1 { font-family: var(--sans); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+  .evidence .total .t2 { font-family: var(--serif); font-size: 24px; font-variant-numeric: tabular-nums; }
+
+  /* sidebar figure + credits */
+  .side { display: flex; flex-direction: column; gap: 34px; }
+  figure.plate { margin: 0; }
+  figure.plate .img { border: 1px solid var(--ink); aspect-ratio: 4/3; background: #fff; position: relative; overflow: hidden; }
+  figure.plate .img .mockpage { position: absolute; inset: 0; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  figure.plate .img .mockpage .b { background: #eceae2; height: 12px; }
+  figure.plate .img .mockpage .b.t { height: 22px; width: 55%; background: #e0ddd3; }
+  figure.plate .img .sweep { position: absolute; top: 0; bottom: 0; width: 36%; left: -42%; background: linear-gradient(90deg, transparent, rgba(207,42,26,.10), transparent); }
+  figure.plate figcaption { font-family: var(--sans); font-size: 12px; color: var(--faint); margin-top: 10px; display: flex; justify-content: space-between; }
+
+  .credits { border-top: 1px solid var(--rule-strong); padding-top: 16px; }
+  .credits .label { display: block; margin-bottom: 10px; }
+  .credits p { margin: 0; font-family: var(--serif); font-size: 16px; line-height: 1.7; }
+  .credits .sep { color: var(--faint); }
+
+  .doshare { border-top: 1px solid var(--rule-strong); padding-top: 16px; }
+  .doshare a { font-family: var(--sans); font-size: 14px; color: var(--accent); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+  .doshare a .arr { transition: transform .18s ease; }
+  .doshare a:hover .arr { transform: translateX(4px); }
+  .honest { font-family: var(--sans); font-size: 12.5px; color: var(--faint); margin-top: 14px; line-height: 1.5; }
+
+  footer { border-top: 1px solid var(--rule-strong); margin-top: 10px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; padding: 26px 32px 60px; font-family: var(--sans); font-size: 13px; color: var(--faint); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="wordmark">Slopdar<span class="dot">.</span></div>
+    <nav class="nav" aria-label="Pages">
+      <button data-view="home" aria-current="true">Home</button>
+      <button data-view="result" aria-current="false">A verdict</button>
+      <a href="#" onclick="return false">Leaderboard</a>
+      <a href="#" onclick="return false">Log in</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ===================== HOME ===================== -->
+  <section class="view is-active" id="view-home">
+    <div class="wrap">
+      <div class="hero">
+        <span class="kicker reveal d1">A second opinion on the web</span>
+        <h1 class="reveal d2">Built, or
+          <span class="mark">slop?<svg viewBox="0 0 300 120" aria-hidden="true"><path id="scrawl" d="M276,52 C274,22 70,8 38,46 C8,82 78,112 158,110 C242,108 286,70 262,40 C252,28 244,24 232,21"/></svg></span>
+        </h1>
+        <p class="lede reveal d3">Paste a website. Slopdar reads it the way a tired senior dev would — and tells you, with receipts, whether a human built it or a prompt did.</p>
+
+        <form class="ask reveal d4" onsubmit="return goResult(event)">
+          <div class="field">
+            <span class="scheme">https://</span>
+            <input type="text" value="acme-ai-saas.vercel.app" aria-label="Website URL" spellcheck="false" />
+            <button type="submit">Judge it <span class="arr">&rarr;</span></button>
+          </div>
+          <div class="note">It takes a few seconds. We look at the page, not your code.</div>
+        </form>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <section class="ledger reveal d5">
+        <div class="hd">
+          <span class="label">Recently judged</span>
+          <span class="label">Slop score</span>
+        </div>
+        <ol>
+          <li onclick="showView('result')"><span class="site">stripe.com</span><span class="tier">Hand-Crafted</span><span class="score">12</span></li>
+          <li onclick="showView('result')"><span class="site">linear.app</span><span class="tier">Hand-Crafted</span><span class="score">21</span></li>
+          <li onclick="showView('result')"><span class="site">notion-clone.io</span><span class="tier">Vibe-Coded</span><span class="score">63</span></li>
+          <li class="slop" onclick="showView('result')"><span class="site">acme-ai-saas.vercel.app</span><span class="tier">Pure Slop</span><span class="score">87</span></li>
+        </ol>
+      </section>
+    </div>
+  </section>
+
+  <!-- ===================== RESULT ===================== -->
+  <section class="view" id="view-result">
+    <div class="wrap">
+      <div class="result">
+        <button class="back" onclick="showView('home')">&larr; Back</button>
+
+        <div class="review">
+          <!-- main column -->
+          <div>
+            <span class="kicker reveal d1">The verdict</span>
+            <h2 class="subject reveal d1">acme-ai-saas.vercel.app</h2>
+
+            <div class="scoreblock reveal d2">
+              <span class="big" id="bigscore">0</span>
+              <span class="of">/ 100</span>
+              <div class="tierwrap"><div class="label">Tier</div><div class="tname" style="color:var(--accent)">Pure Slop</div></div>
+            </div>
+
+            <div class="gauge reveal d2">
+              <div class="line">
+                <span class="pip" style="left:0"></span><span class="pip" style="left:25%"></span>
+                <span class="pip" style="left:50%"></span><span class="pip" style="left:75%"></span><span class="pip" style="left:100%"></span>
+                <span class="now" id="now"></span>
+              </div>
+              <div class="ends"><span>Built</span><span>Slop</span></div>
+            </div>
+
+            <div class="verdict reveal d3">
+              <span class="q" id="verdict">Never met a human hand. It prompts, it deploys, it prays — and it forgot to delete the lorem ipsum on the way out.</span>
+              <div class="tone" role="group" aria-label="Tone">
+                <button data-tone="brutal" aria-pressed="true">Brutal</button>
+                <button data-tone="nice" aria-pressed="false">Kind</button>
+              </div>
+            </div>
+
+            <div class="evidence reveal d4">
+              <span class="label">The evidence &mdash; 5 tells, heaviest first</span>
+              <ol>
+                <li><span class="tell">Built with v0.dev</span><span class="cat">Tool fingerprint</span><span class="ev">v0.dev reference in page source</span><span class="w">+35</span></li>
+                <li><span class="tell">Lorem ipsum left in the copy</span><span class="cat">Leftover</span><span class="ev">"lorem ipsum dolor sit amet, consectetur…"</span><span class="w">+22</span></li>
+                <li><span class="tell">Marketing buzzword cluster</span><span class="cat">Copy</span><span class="ev">elevate, seamless, supercharge</span><span class="w">+12</span></li>
+                <li><span class="tell">The classic vibe-coding stack</span><span class="cat">Stack</span><span class="ev">Next.js + Vercel + Supabase</span><span class="w">+10</span></li>
+                <li><span class="tell">Default lucide icons throughout</span><span class="cat">Default stack</span><span class="ev">the icon set every AI build ships</span><span class="w">+8</span></li>
+              </ol>
+              <div class="total"><span class="t1">Total slop score</span><span class="t2">87 / 100</span></div>
+            </div>
+          </div>
+
+          <!-- sidebar -->
+          <aside class="side">
+            <figure class="plate reveal d2">
+              <div class="img">
+                <div class="mockpage">
+                  <div class="b t"></div><div class="b" style="width:80%"></div><div class="b" style="width:62%"></div>
+                  <div class="b" style="width:90%;margin-top:auto"></div><div class="b" style="width:40%"></div>
+                </div>
+                <div class="sweep" id="sweep"></div>
+              </div>
+              <figcaption><span>Captured live, 1280&times;800</span><span>Fig. 1</span></figcaption>
+            </figure>
+
+            <div class="credits reveal d3">
+              <span class="label">Detected stack</span>
+              <p>Next.js <span class="sep">/</span> React <span class="sep">/</span> Tailwind CSS <span class="sep">/</span> Vercel <span class="sep">/</span> Supabase <span class="sep">/</span> lucide-react</p>
+            </div>
+
+            <div class="doshare reveal d4">
+              <a onclick="flash(this)"><span class="txt">Copy the share card</span> <span class="arr">&rarr;</span></a>
+              <p class="honest">We report signals, not proof. A high score means we found a lot of tells &mdash; not a confession.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 Slopdar &mdash; a second opinion on the web.</span>
+    <span>Slopdar runs on the slop stack. We know.</span>
+  </div>
+</footer>
+
+<script>
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const tabs = document.querySelectorAll("nav.nav button");
+
+  function showView(name) {
+    document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
+    const v = document.getElementById("view-" + name);
+    // restart reveal animations
+    void v.offsetWidth;
+    v.classList.add("is-active");
+    tabs.forEach((t) => t.setAttribute("aria-current", String(t.dataset.view === name)));
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    if (name === "home") drawScrawl();
+    if (name === "result") runResult();
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => showView(t.dataset.view)));
+  function goResult(e) { e.preventDefault(); showView("result"); return false; }
+
+  // hand-drawn red circle around "slop?"
+  function drawScrawl() {
+    const p = document.getElementById("scrawl");
+    if (!p) return;
+    if (reduce) { p.style.strokeDasharray = "none"; return; }
+    const len = p.getTotalLength();
+    p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+    p.getBoundingClientRect();
+    p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: 680, delay: 620, easing: "cubic-bezier(.6,.1,.3,1)", fill: "forwards" });
+  }
+
+  // result: count up + gauge + sweep
+  const TARGET = 87;
+  function runResult() {
+    const big = document.getElementById("bigscore");
+    const now = document.getElementById("now");
+    const sweep = document.getElementById("sweep");
+    if (reduce) { big.textContent = TARGET; now.style.left = TARGET + "%"; return; }
+    now.style.left = "0%"; requestAnimationFrame(() => (now.style.left = TARGET + "%"));
+    const start = performance.now(), dur = 1000;
+    (function tick(t) {
+      const k = Math.min(1, (t - start) / dur), e = 1 - Math.pow(1 - k, 3);
+      big.textContent = Math.round(e * TARGET);
+      if (k < 1) requestAnimationFrame(tick);
+    })(start);
+    sweep.animate([{ left: "-42%" }, { left: "112%" }], { duration: 1200, delay: 250, easing: "ease-out" });
+  }
+
+  // tone toggle
+  const V = {
+    brutal: "Never met a human hand. It prompts, it deploys, it prays — and it forgot to delete the lorem ipsum on the way out.",
+    nice: "Shipped quickly, and it shows. A handful of AI tells slipped through — nothing a careful afternoon couldn’t fix.",
+  };
+  document.querySelectorAll(".tone button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".tone button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", "true");
+    document.getElementById("verdict").textContent = V[b.dataset.tone];
+  }));
+
+  function flash(el) {
+    const t = el.querySelector(".txt"), old = t.textContent;
+    t.textContent = "Copied to clipboard"; setTimeout(() => (t.textContent = old), 1300);
+  }
+
+  // initial
+  drawScrawl();
+</script>
