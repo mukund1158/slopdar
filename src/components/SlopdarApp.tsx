@@ -17,7 +17,7 @@ interface Tech { name: string; category?: string; confidence: number }
 interface CheckResult {
   slug: string; url: string; host: string; score: number; tier: string;
   screenshot: string | null; title: string | null;
-  signals: Receipt[]; tech: Tech[]; scanError: string | null;
+  signals: Receipt[]; tech: Tech[]; scanError: string | null; scannedAt?: string;
 }
 interface LeaderRow { domain: string; slug: string; score: number }
 
@@ -39,6 +39,23 @@ const EXAMPLE_DOMAINS = ["stripe.com", "linear.app", "vercel.com"];
 const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 function displayDomain(raw: string): string {
   return raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+}
+function timeAgo(iso?: string): string {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const s = Math.max(0, Math.floor((Date.now() - then) / 1000));
+  if (s < 45) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d} day${d > 1 ? "s" : ""} ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return `${mo} month${mo > 1 ? "s" : ""} ago`;
+  const y = Math.floor(mo / 12);
+  return `${y} year${y > 1 ? "s" : ""} ago`;
 }
 
 export default function SlopdarApp() {
@@ -104,7 +121,7 @@ export default function SlopdarApp() {
     rafRef.current = requestAnimationFrame(tick);
   }, []);
 
-  const doCheck = useCallback(async (raw: string) => {
+  const doCheck = useCallback(async (raw: string, opts: { force?: boolean } = {}) => {
     const url = raw.trim();
     if (!url) return;
     const disp = displayDomain(url);
@@ -118,7 +135,7 @@ export default function SlopdarApp() {
 
     try {
       const [res] = await Promise.all([
-        fetch("/api/check", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url }) }),
+        fetch("/api/check", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url, force: opts.force ?? false }) }),
         delay(900),
       ]);
       if (!res.ok) throw new Error("unreachable");
@@ -351,8 +368,14 @@ export default function SlopdarApp() {
         <section style={{ position: "relative", background: tier.tint, borderBottom: "2px solid var(--ink)" }}>
           <div style={{ ...sectionWrapInner, padding: "30px 28px 36px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 8 }}>
-              <div style={{ fontFamily: MONO, fontSize: 13, color: "var(--ink2)" }}>Verdict for <span style={{ color: "var(--ink)", fontWeight: 600 }}>{domain}</span></div>
-              <button className="h-ink" onClick={reset} style={{ background: "var(--card)", border: "2px solid var(--ink)", color: "var(--ink)", fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "9px 15px", borderRadius: 9, cursor: "pointer" }}>↻ Roast another</button>
+              <div style={{ fontFamily: MONO, fontSize: 13, color: "var(--ink2)" }}>
+                Verdict for <span style={{ color: "var(--ink)", fontWeight: 600 }}>{domain}</span>
+                {result.scannedAt && <span style={{ color: "var(--mut)" }}> · scanned {timeAgo(result.scannedAt)}</span>}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <button className="h-ink" onClick={() => doCheck(result.url, { force: true })} style={{ background: "var(--card)", border: "2px solid var(--ink)", color: "var(--ink)", fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "9px 15px", borderRadius: 9, cursor: "pointer" }}>↻ Re-scan</button>
+                <button className="h-ink" onClick={reset} style={{ background: "var(--card)", border: "2px solid var(--ink)", color: "var(--ink)", fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "9px 15px", borderRadius: 9, cursor: "pointer" }}>Roast another →</button>
+              </div>
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 34, alignItems: "center", justifyContent: "center", textAlign: "center" }}>

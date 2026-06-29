@@ -54,6 +54,7 @@ export interface CheckResponse {
   signals: { id: string; category: string; label: string; description: string; weight: number; evidence?: string }[];
   tech: { name: string; category?: string; confidence: number }[];
   scanError: string | null;
+  scannedAt: string; // ISO timestamp of the live scan (preserved across cache hits)
   cached: boolean;
 }
 
@@ -156,6 +157,7 @@ export async function runCheck(rawUrl: string, opts: { force?: boolean } = {}): 
     signals: result.signals,
     tech: result.tech,
     scanError: result.fetchError ?? null,
+    scannedAt: saved.updatedAt.toISOString(),
     cached: false,
   };
 
