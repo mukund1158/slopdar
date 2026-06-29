@@ -8,7 +8,7 @@ export const layoutSignals: SignalRule[] = [
     category: "layout",
     weight: 9,
     label: "Bento-grid layout",
-    description: "Bento-style grid markup — a default AI landing-page pattern.",
+    description: "Bento-style grid markup: a default AI landing-page pattern.",
     test: (ctx) => (rawHtml(ctx).includes("bento") ? { evidence: "bento grid markup" } : null),
   },
   {
@@ -16,7 +16,7 @@ export const layoutSignals: SignalRule[] = [
     category: "layout",
     weight: 9,
     label: "Gradient blobs / aurora",
-    description: "Large blurred gradient backgrounds — a stock decorative pattern.",
+    description: "Large blurred gradient backgrounds: a stock decorative pattern.",
     test: (ctx) => {
       const html = rawHtml(ctx);
       const hasBlur = html.includes("blur-3xl") || html.includes("blur-2xl");

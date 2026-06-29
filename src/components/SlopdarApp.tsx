@@ -170,7 +170,7 @@ export default function SlopdarApp() {
     };
   }, [board, leaderTab, leaderQuery, leaderPage]);
 
-  const counterFmt = board ? board.total.toLocaleString("en-US") : "—";
+  const counterFmt = board ? board.total.toLocaleString("en-US") : "…";
 
   // ───────────────────────────── render helpers ───────────────────────────
   const Header = (
@@ -219,7 +219,7 @@ export default function SlopdarApp() {
           </div>
         </div>
         {rows.length === 0 ? (
-          <div style={{ padding: "22px 18px", fontFamily: MONO, fontSize: 12.5, color: "var(--mut)" }}>No sites yet — be the first.</div>
+          <div style={{ padding: "22px 18px", fontFamily: MONO, fontSize: 12.5, color: "var(--mut)" }}>No sites yet. Be the first.</div>
         ) : rows.map((r, i) => (
           <button key={r.slug} className={rowHover} onClick={() => doCheck(r.domain)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "transparent", border: "none", borderTop: "1px solid var(--line)", padding: "13px 18px", cursor: "pointer", textAlign: "left", fontFamily: SANS }}>
             <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 20 }}>{String(i + 1).padStart(2, "0")}</span>
@@ -416,7 +416,7 @@ export default function SlopdarApp() {
               <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>{signals.length} tells found</span>
             </div>
             {signals.length === 0 ? (
-              <p style={{ margin: "16px 0 0", fontSize: 15, color: "var(--ink2)", lineHeight: 1.55 }}>No tells found — suspiciously clean. A human probably touched this. Respect.</p>
+              <p style={{ margin: "16px 0 0", fontSize: 15, color: "var(--ink2)", lineHeight: 1.55 }}>No tells found. Suspiciously clean. A human probably touched this. Respect.</p>
             ) : signals.map((r, i) => (
               <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
                 <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 22 }}>{String(i + 1).padStart(2, "0")}</span>
@@ -585,7 +585,7 @@ export default function SlopdarApp() {
             <div style={{ padding: "24px 24px 0" }}>
               <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--mut)" }}>Embed your badge</div>
               <h3 style={{ fontWeight: 900, fontSize: 24, letterSpacing: "-.02em", margin: "8px 0 0" }}>Drop this on your site</h3>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--ink2)", margin: "10px 0 0" }}>{embedScore != null ? `A live badge for ${embedDomain} — it updates automatically as the score changes.` : "Paste this into your HTML. Swap yoursite.com for your own domain and the badge auto-updates."}</p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--ink2)", margin: "10px 0 0" }}>{embedScore != null ? `A live badge for ${embedDomain}. It updates automatically as the score changes.` : "Paste this into your HTML. Swap yoursite.com for your own domain and the badge auto-updates."}</p>
               <div style={{ display: "inline-flex", marginTop: 16, fontFamily: MONO, fontSize: 13, border: "2px solid var(--ink)", borderRadius: 9, overflow: "hidden", boxShadow: "0 3px 0 rgba(0,0,0,.12)" }}>
                 <span style={{ background: "var(--ink)", color: "var(--bg)", padding: "8px 12px", fontWeight: 600 }}>slopdar</span>
                 <span style={{ background: tierOf(embedScore ?? 16).color, color: "#fff", padding: "8px 12px", fontWeight: 700 }}>{(embedScore ?? 16)} · {tierOf(embedScore ?? 16).label.toLowerCase()}</span>

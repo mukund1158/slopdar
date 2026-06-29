@@ -45,7 +45,7 @@ export const stackSignals: SignalRule[] = [
     category: "stack",
     weight: 10,
     label: "Classic vibe-coding stack",
-    description: "Next.js + Vercel + Supabase together — the default AI-build combo.",
+    description: "Next.js + Vercel + Supabase together: the default AI-build combo.",
     test: (ctx) => {
       const h = ctx.headers;
       const html = rawHtml(ctx);
