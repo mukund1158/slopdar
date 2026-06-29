@@ -38,4 +38,41 @@ export const layoutSignals: SignalRule[] = [
       return m ? { evidence: snippet(m[0]) } : null;
     },
   },
+
+  // ── Tier D: template-skeleton / signature visual tells ────────────────────
+  {
+    id: "layout.ai-palette",
+    category: "layout",
+    weight: 8,
+    label: "Signature AI gradient palette",
+    description: "The blue/indigo/violet gradient AI builds reach for by default.",
+    test: (ctx) => {
+      const html = rawHtml(ctx);
+      if (html.includes("bg-gradient") && /(?:from|via|to)-(?:indigo|violet|purple|fuchsia)-/.test(html)) {
+        return { evidence: "indigo/violet gradient" };
+      }
+      return null;
+    },
+  },
+  {
+    id: "layout.three-card-grid",
+    category: "layout",
+    weight: 6,
+    label: "Three-feature-card grid",
+    description: "The hero-plus-three-cards layout AI builders default to.",
+    test: (ctx) => (/\b(?:sm:|md:|lg:)?grid-cols-3\b/.test(rawHtml(ctx)) ? { evidence: "3-column feature grid" } : null),
+  },
+  {
+    id: "layout.dark-neon",
+    category: "layout",
+    weight: 5,
+    label: "Dark mode with neon accents",
+    description: "A near-black background with saturated neon accents, a common AI look.",
+    test: (ctx) => {
+      const html = rawHtml(ctx);
+      const dark = /bg-(?:black|zinc-9\d{2}|slate-9\d{2}|gray-9\d{2}|neutral-9\d{2})/.test(html);
+      const neon = /(?:text|from|to|via)-(?:cyan|fuchsia|emerald|lime|violet)-[345]\d{2}/.test(html);
+      return dark && neon ? { evidence: "dark bg + neon accent" } : null;
+    },
+  },
 ];

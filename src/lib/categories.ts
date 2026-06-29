@@ -7,6 +7,8 @@ export const CATEGORY_LABEL: Record<string, string> = {
   layout: "Layout tell",
   leftover: "Leftover junk",
   stack: "Stack tell",
+  quality: "Low-effort tell",
+  human: "Human signal",
 };
 
 export function categoryLabel(category: string): string {

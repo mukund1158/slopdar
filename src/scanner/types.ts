@@ -8,7 +8,9 @@ export type SignalCategory =
   | "copy" // 📝 text / writing tells
   | "layout" // 🧱 design / layout tells
   | "leftover" // 🔧 placeholder junk
-  | "stack"; // ☁️ hosting / framework combos
+  | "stack" // ☁️ hosting / framework combos
+  | "quality" // 🧹 low-effort / unpolished build tells
+  | "human"; // 🤍 signs a human was involved (negative weight — lowers the score)
 
 /** Everything a rule gets to inspect about a fetched page. */
 export interface ScanContext {
