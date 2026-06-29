@@ -1,0 +1,524 @@
+<title>Slopdar — Design Mockup</title>
+<meta name="description" content="Brutalist riso-print design mockup for Slopdar: Home + Result pages." />
+
+<style>
+  :root {
+    --ink: #17130d;
+    --ink-2: #3a342a;
+    --paper: #e7e3d6;
+    --card: #f1eee4;
+    --pink: #ff2e74; /* slop / bad */
+    --blue: #1f3bd6; /* built / good */
+    --line: #17130d;
+    --shadow: 6px 6px 0 var(--ink);
+    --shadow-sm: 4px 4px 0 var(--ink);
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --maxw: 1080px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 38px, rgba(23,19,13,.03) 38px 39px),
+      var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* ---- crop marks: the printed-artifact frame ---- */
+  .crop { position: fixed; width: 22px; height: 22px; z-index: 50; pointer-events: none; opacity: .55; }
+  .crop::before, .crop::after { content: ""; position: absolute; background: var(--ink); }
+  .crop::before { width: 100%; height: 2px; top: 0; }
+  .crop::after { width: 2px; height: 100%; left: 0; }
+  .crop.tl { top: 14px; left: 14px; }
+  .crop.tr { top: 14px; right: 14px; transform: scaleX(-1); }
+  .crop.bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
+  .crop.br { bottom: 14px; right: 14px; transform: scale(-1); }
+
+  /* ---- masthead ---- */
+  header.masthead {
+    border-bottom: 3px solid var(--line);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .masthead .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding-top: 14px; padding-bottom: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .mark {
+    width: 38px; height: 38px; border: 2.5px solid var(--ink); border-radius: 50%;
+    display: grid; place-items: center; position: relative; background: var(--card);
+    flex: none;
+  }
+  .mark span { font-size: 18px; line-height: 1; }
+  .mark::after {
+    content: ""; position: absolute; inset: 4px; border-radius: 50%;
+    border: 1.5px dashed rgba(23,19,13,.35);
+  }
+  .brand b { font-size: 22px; font-weight: 900; letter-spacing: -.04em; }
+  .brand small { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); margin-top: -2px; }
+
+  nav.tabs { display: flex; gap: 0; border: 2.5px solid var(--ink); }
+  nav.tabs button {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--card); color: var(--ink); border: 0; padding: 9px 16px; cursor: pointer;
+    border-right: 2.5px solid var(--ink);
+  }
+  nav.tabs button:last-child { border-right: 0; }
+  nav.tabs button[aria-current="true"] { background: var(--ink); color: var(--paper); }
+  nav.tabs button:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+
+  /* ---- view switching ---- */
+  .view { display: none; }
+  .view.is-active { display: block; animation: viewin .5s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes viewin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* ---- shared bits ---- */
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-2); display: inline-flex; gap: 8px; align-items: center;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 2px; background: var(--ink); display: inline-block; }
+
+  .btn {
+    font-family: var(--sans); font-weight: 800; font-size: 15px; letter-spacing: .01em;
+    background: var(--pink); color: #fff; border: 2.5px solid var(--ink);
+    padding: 14px 22px; cursor: pointer; box-shadow: var(--shadow); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 10px; transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover { transform: translate(2px,2px); box-shadow: var(--shadow-sm); }
+  .btn:active { transform: translate(6px,6px); box-shadow: 0 0 0 var(--ink); }
+  .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  .btn.ghost { background: var(--card); color: var(--ink); }
+
+  /* ============ HOME ============ */
+  .hero { padding: 56px 0 32px; }
+  .hero h1 {
+    font-size: clamp(44px, 9vw, 104px); font-weight: 900; letter-spacing: -.045em;
+    line-height: .92; margin: 18px 0 0; text-wrap: balance; text-transform: uppercase;
+  }
+  .hero h1 .slop { color: var(--pink); position: relative; white-space: nowrap; }
+  .hero h1 .slop::after {
+    content: ""; position: absolute; left: -2%; right: -2%; bottom: .12em; height: .14em;
+    background: var(--blue); transform: scaleX(0); transform-origin: left; animation: ul .6s .5s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  @keyframes ul { to { transform: scaleX(1); } }
+  .hero p.lede { font-size: clamp(16px,2.2vw,20px); max-width: 56ch; margin: 22px 0 0; color: var(--ink-2); }
+
+  .checkbox-row { margin-top: 30px; display: flex; gap: 0; max-width: 720px; box-shadow: var(--shadow); border: 2.5px solid var(--ink); background: var(--card); }
+  .checkbox-row .pfx { font-family: var(--mono); display: grid; place-items: center; padding: 0 14px; border-right: 2.5px solid var(--ink); color: var(--ink-2); font-size: 13px; }
+  .checkbox-row input {
+    flex: 1; min-width: 0; border: 0; background: transparent; padding: 16px 14px;
+    font-family: var(--mono); font-size: 15px; color: var(--ink);
+  }
+  .checkbox-row input:focus { outline: none; }
+  .checkbox-row .btn { box-shadow: none; border: 0; border-left: 2.5px solid var(--ink); }
+  .checkbox-row .btn:hover { transform: none; }
+
+  .meta-strip { display: flex; flex-wrap: wrap; gap: 26px; align-items: center; margin-top: 22px; }
+  .counter { font-family: var(--mono); font-weight: 700; }
+  .counter b { font-size: 22px; letter-spacing: .02em; font-variant-numeric: tabular-nums; border: 2px solid var(--ink); padding: 2px 8px; background: var(--card); }
+  .counter small { display: block; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); margin-top: 4px; }
+
+  /* examples */
+  .examples { padding: 28px 0 64px; }
+  .examples .head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-top: 3px solid var(--ink); padding-top: 20px; margin-top: 8px; }
+  .examples h2 { font-size: 14px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; margin: 0; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 20px; }
+  .scard {
+    border: 2.5px solid var(--ink); background: var(--card); box-shadow: var(--shadow-sm);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer;
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .scard:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
+  .scard .host { font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .scard .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .scard .num { font-size: 40px; font-weight: 900; letter-spacing: -.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .pill { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; border: 2px solid var(--ink); padding: 4px 7px; white-space: nowrap; }
+  .pill.good { background: var(--blue); color: #fff; }
+  .pill.bad  { background: var(--pink); color: #fff; }
+  .pill.mid  { background: var(--card); color: var(--ink); }
+  .bar { height: 8px; border: 2px solid var(--ink); background: var(--card); position: relative; overflow: hidden; }
+  .bar > i { position: absolute; inset: 0 auto 0 0; display: block; }
+
+  /* ============ RESULT ============ */
+  .result { padding: 40px 0 70px; }
+  .crumbs { font-family: var(--mono); font-size: 12px; color: var(--ink-2); letter-spacing: .04em; margin-bottom: 16px; }
+  .crumbs a { color: var(--ink-2); }
+
+  .verdict { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 28px; align-items: start; }
+  @media (max-width: 860px) { .verdict { grid-template-columns: 1fr; } }
+
+  .stamp-panel {
+    border: 3px solid var(--ink); background: var(--ink); color: var(--paper);
+    padding: 30px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .stamp-panel .halftone {
+    position: absolute; inset: 0; pointer-events: none; opacity: .14;
+    background-image: radial-gradient(currentColor 1.4px, transparent 1.5px);
+    background-size: 10px 10px; color: var(--pink);
+  }
+  .stamp-panel .label { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; opacity: .8; }
+  .score-line { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0 2px; position: relative; }
+  .score-num { font-size: clamp(96px, 20vw, 168px); font-weight: 900; letter-spacing: -.05em; line-height: .82; font-variant-numeric: tabular-nums; color: var(--pink); }
+  .score-den { font-family: var(--mono); font-size: 20px; opacity: .7; margin-bottom: 16px; }
+
+  .stamp {
+    position: absolute; top: 22px; right: 22px; border: 4px solid var(--pink); color: var(--pink);
+    font-family: var(--mono); font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    padding: 8px 12px; font-size: 15px; transform: rotate(-7deg); border-radius: 4px;
+    display: flex; align-items: center; gap: 8px; background: rgba(23,19,13,.2);
+  }
+  .stamp .emoji { font-size: 20px; }
+
+  .meter { margin-top: 22px; }
+  .meter .track { height: 16px; border: 2px solid var(--paper); position: relative; background: repeating-linear-gradient(90deg, transparent 0 28px, rgba(231,227,214,.18) 28px 29px); }
+  .meter .fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--blue), var(--pink)); width: 0; }
+  .meter .scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .7; margin-top: 7px; }
+
+  .roast { border: 3px solid var(--ink); background: var(--card); padding: 20px; box-shadow: var(--shadow-sm); }
+  .roast .toggle { display: inline-flex; border: 2px solid var(--ink); margin-bottom: 14px; }
+  .roast .toggle button { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; padding: 6px 12px; border: 0; border-right: 2px solid var(--ink); background: var(--card); cursor: pointer; }
+  .roast .toggle button:last-child { border-right: 0; }
+  .roast .toggle button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .roast p { font-size: 19px; font-weight: 700; margin: 0; line-height: 1.35; text-wrap: pretty; }
+  .roast .honest { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-top: 12px; }
+
+  /* receipts = thermal printout */
+  .receipts { margin-top: 12px; }
+  .receipt {
+    background: var(--card); border: 2.5px solid var(--ink); box-shadow: var(--shadow-sm);
+    position: relative; padding: 0;
+  }
+  .receipt .rhead { padding: 16px 18px 12px; border-bottom: 2px dashed rgba(23,19,13,.4); }
+  .receipt .rhead b { font-family: var(--mono); text-transform: uppercase; letter-spacing: .12em; font-size: 13px; }
+  .receipt .rhead small { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display: block; margin-top: 3px; }
+  .receipt ul { list-style: none; margin: 0; padding: 6px 0; }
+  .receipt li {
+    display: grid; grid-template-columns: 1fr auto; gap: 6px 14px; align-items: baseline;
+    padding: 11px 18px; border-bottom: 1px dotted rgba(23,19,13,.25);
+  }
+  .receipt li:last-child { border-bottom: 0; }
+  .receipt .cat { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-2); grid-column: 1 / -1; }
+  .receipt .tell { font-weight: 700; font-size: 15.5px; }
+  .receipt .pts { font-family: var(--mono); font-weight: 700; font-size: 14px; color: var(--pink); font-variant-numeric: tabular-nums; }
+  .receipt .ev { font-family: var(--mono); font-size: 12px; color: var(--ink-2); grid-column: 1 / -1; }
+  .receipt .rfoot { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; padding: 14px 18px; border-top: 2px dashed rgba(23,19,13,.4); text-transform: uppercase; letter-spacing: .08em; }
+  .receipt .rfoot b { color: var(--pink); }
+  .perf { height: 12px; background:
+      radial-gradient(circle at 6px -3px, transparent 6px, var(--card) 7px) repeat-x;
+    background-size: 16px 12px; border: 2.5px solid var(--ink); border-top: 0; }
+
+  /* sidebar */
+  .side { display: flex; flex-direction: column; gap: 18px; }
+  .shot { border: 2.5px solid var(--ink); box-shadow: var(--shadow-sm); background: var(--card); position: relative; overflow: hidden; }
+  .shot .frame { aspect-ratio: 16/10; background:
+      linear-gradient(135deg, #cfd8f2, #f3d8e6);
+    display: grid; place-items: center; position: relative; }
+  .shot .frame .fake {
+    position: absolute; inset: 14px; border: 1.5px dashed rgba(23,19,13,.35);
+    display: flex; flex-direction: column; gap: 8px; padding: 16px; font-family: var(--mono); font-size: 10px; color: rgba(23,19,13,.5);
+  }
+  .shot .frame .fake .blk { height: 10px; background: rgba(23,19,13,.16); }
+  .shot .sweep { position: absolute; top: 0; bottom: 0; width: 40%; left: -45%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); }
+  .shot .cap { font-family: var(--mono); font-size: 11px; padding: 8px 12px; border-top: 2.5px solid var(--ink); display: flex; justify-content: space-between; color: var(--ink-2); }
+
+  .panel { border: 2.5px solid var(--ink); background: var(--card); box-shadow: var(--shadow-sm); padding: 16px; }
+  .panel h3 { margin: 0 0 12px; font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .12em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: var(--mono); font-size: 11px; border: 2px solid var(--ink); padding: 4px 8px; background: var(--paper); }
+
+  /* share card preview */
+  .sharecard { border: 3px solid var(--ink); background: var(--ink); color: var(--paper); padding: 18px; position: relative; overflow: hidden; }
+  .sharecard .halftone { position: absolute; inset: 0; opacity: .12; background-image: radial-gradient(var(--pink) 1.3px, transparent 1.4px); background-size: 9px 9px; }
+  .sharecard .sc-top { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; opacity: .85; position: relative; }
+  .sharecard .sc-num { font-size: 64px; font-weight: 900; letter-spacing: -.04em; color: var(--pink); line-height: 1; position: relative; }
+  .sharecard .sc-host { font-family: var(--mono); font-size: 13px; position: relative; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+
+  footer { border-top: 3px solid var(--ink); padding: 24px 0 60px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark"><span>🛰️</span></div>
+      <div>
+        <b>SLOPDAR</b>
+        <small>Is it built or is it slop?</small>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Mockup pages">
+      <button data-view="home" aria-current="true">Home</button>
+      <button data-view="result" aria-current="false">Result</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ===================== HOME ===================== -->
+  <section class="view is-active" id="view-home">
+    <div class="hero">
+      <span class="eyebrow">Vibe-code detector · est. 2026</span>
+      <h1>Is it built<br />or is it <span class="slop">slop?</span></h1>
+      <p class="lede">Paste any website. We scan it for AI &amp; vibe-coding tells and stamp it with a Slop Score out of 100 — receipts included.</p>
+
+      <form class="checkbox-row" onsubmit="return goResult(event)">
+        <span class="pfx">https://</span>
+        <input type="text" value="acme-ai-saas.vercel.app" aria-label="Website URL" spellcheck="false" />
+        <button class="btn" type="submit">Check the vibe →</button>
+      </form>
+
+      <div class="meta-strip">
+        <div class="counter">
+          <b id="counter">12,438</b>
+          <small>sites checked so far</small>
+        </div>
+        <div class="counter">
+          <b>5</b>
+          <small>tells, not a verdict</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="examples">
+      <div class="head">
+        <h2>Recently stamped</h2>
+        <span class="eyebrow">tap one →</span>
+      </div>
+      <div class="cards">
+        <article class="scard" onclick="showView('result')">
+          <div class="host">stripe.com</div>
+          <div class="row"><span class="num">12</span><span class="pill good">🛠️ Hand-Crafted</span></div>
+          <div class="bar"><i style="width:12%;background:var(--blue)"></i></div>
+        </article>
+        <article class="scard" onclick="showView('result')">
+          <div class="host">linear.app</div>
+          <div class="row"><span class="num">21</span><span class="pill good">🛠️ Hand-Crafted</span></div>
+          <div class="bar"><i style="width:21%;background:var(--blue)"></i></div>
+        </article>
+        <article class="scard" onclick="showView('result')">
+          <div class="host">acme-ai-saas.vercel.app</div>
+          <div class="row"><span class="num" style="color:var(--pink)">87</span><span class="pill bad">🤖 Pure Slop</span></div>
+          <div class="bar"><i style="width:87%;background:var(--pink)"></i></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RESULT ===================== -->
+  <section class="view" id="view-result">
+    <div class="result">
+      <div class="crumbs"><a href="#" onclick="showView('home');return false">← slopdar.com</a> / r / acme-ai-saas.vercel.app</div>
+
+      <div class="verdict">
+        <div>
+          <div class="stamp-panel">
+            <div class="halftone"></div>
+            <div class="stamp" id="stamp"><span class="emoji">🤖</span> Pure Slop</div>
+            <div class="label">Slop Score</div>
+            <div class="score-line">
+              <span class="score-num" id="bigscore">0</span>
+              <span class="score-den">/ 100</span>
+            </div>
+            <div class="meter">
+              <div class="track"><div class="fill" id="fill"></div></div>
+              <div class="scale"><span>0 · built</span><span>50</span><span>slop · 100</span></div>
+            </div>
+          </div>
+
+          <div class="roast" style="margin-top:18px">
+            <div class="toggle" role="group" aria-label="Roast tone">
+              <button data-tone="nice" aria-pressed="false">😇 Nice</button>
+              <button data-tone="brutal" aria-pressed="true">😈 Brutal</button>
+            </div>
+            <p id="roastline">This site has never met a human hand. Prompt, deploy, pray — and ship the lorem ipsum while you're at it.</p>
+            <div class="honest">⚠ We detect signals, not proof. We found <b>5 tells</b> — make of them what you will.</div>
+          </div>
+
+          <div class="receipts">
+            <div class="receipt" id="receipt">
+              <div class="rhead">
+                <b>The Receipts</b>
+                <small>5 tells found · scanned 28 Jun 2026, 22:14 IST</small>
+              </div>
+              <ul>
+                <li><span class="cat">🏷️ Tool fingerprint</span><span class="tell">Built with v0.dev</span><span class="pts">+35</span><span class="ev">v0.dev reference found in page source</span></li>
+                <li><span class="cat">🔧 Leftover junk</span><span class="tell">Lorem ipsum placeholder text</span><span class="pts">+22</span><span class="ev">"lorem ipsum dolor sit amet, consectetur…"</span></li>
+                <li><span class="cat">📝 Copy tell</span><span class="tell">AI marketing buzzwords</span><span class="pts">+12</span><span class="ev">elevate · seamless · supercharge</span></li>
+                <li><span class="cat">☁️ Stack tell</span><span class="tell">Classic vibe-coding stack</span><span class="pts">+10</span><span class="ev">Next.js + Vercel + Supabase</span></li>
+                <li><span class="cat">🎨 Default stack</span><span class="tell">lucide-react icons everywhere</span><span class="pts">+8</span><span class="ev">the default AI icon set</span></li>
+              </ul>
+              <div class="rfoot"><span>Total</span><span><b>87</b> / 100</span></div>
+            </div>
+            <div class="perf"></div>
+          </div>
+        </div>
+
+        <!-- sidebar -->
+        <aside class="side">
+          <div class="shot">
+            <div class="frame">
+              <div class="fake">
+                <div class="blk" style="width:40%"></div>
+                <div class="blk" style="width:80%;height:20px"></div>
+                <div class="blk" style="width:60%"></div>
+                <div style="display:flex;gap:8px;margin-top:auto"><span class="blk" style="width:90px;height:24px"></span><span class="blk" style="width:90px;height:24px"></span></div>
+                <div>screenshot · captured live</div>
+              </div>
+              <div class="sweep" id="sweep"></div>
+            </div>
+            <div class="cap"><span>acme-ai-saas.vercel.app</span><span>1280×800</span></div>
+          </div>
+
+          <div class="panel">
+            <h3>Tech detected</h3>
+            <div class="chips">
+              <span class="chip">Next.js</span><span class="chip">React</span><span class="chip">Tailwind CSS</span>
+              <span class="chip">Vercel</span><span class="chip">Supabase</span><span class="chip">lucide-react</span>
+            </div>
+          </div>
+
+          <div class="panel" style="padding:0;border:0;box-shadow:none">
+            <div class="sharecard">
+              <div class="halftone"></div>
+              <div class="sc-top"><span>SLOP SCORE</span><span>🛰️ slopdar.com</span></div>
+              <div class="sc-num">87</div>
+              <div class="sc-host">acme-ai-saas.vercel.app · 🤖 Pure Slop</div>
+            </div>
+            <div class="actions">
+              <button class="btn" style="flex:1" onclick="flash(this,'Card copied ✓')">Share card</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a class="btn ghost" href="#" onclick="showView('home');return false" style="flex:1;justify-content:center">Check another →</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Slopdar — a radar for slop.</span>
+    <span>Yes, Slopdar runs on the slop stack. We know. 🌊</span>
+  </div>
+</footer>
+
+<script>
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const tabs = document.querySelectorAll("nav.tabs button");
+
+  function showView(name) {
+    document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
+    document.getElementById("view-" + name).classList.add("is-active");
+    tabs.forEach((t) => t.setAttribute("aria-current", String(t.dataset.view === name)));
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    if (name === "result") runResultAnim();
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => showView(t.dataset.view)));
+  function goResult(e) { e.preventDefault(); showView("result"); return false; }
+
+  // count-up + stamp + meter
+  const TARGET = 87;
+  let animed = false;
+  function runResultAnim() {
+    const big = document.getElementById("bigscore");
+    const fill = document.getElementById("fill");
+    const stamp = document.getElementById("stamp");
+    const sweep = document.getElementById("sweep");
+    const receipt = document.getElementById("receipt");
+
+    if (reduce) { big.textContent = TARGET; fill.style.width = TARGET + "%"; return; }
+
+    // meter
+    fill.style.transition = "width 1.05s cubic-bezier(.2,.8,.2,1)";
+    fill.style.width = "0%"; requestAnimationFrame(() => (fill.style.width = TARGET + "%"));
+
+    // count up
+    const start = performance.now(), dur = 1000;
+    function tick(now) {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      big.textContent = Math.round(eased * TARGET);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    // stamp thud
+    stamp.style.animation = "none"; void stamp.offsetWidth;
+    stamp.style.transformOrigin = "center";
+    stamp.animate(
+      [
+        { transform: "rotate(-7deg) scale(2.6)", opacity: 0, filter: "blur(4px)" },
+        { transform: "rotate(-7deg) scale(.92)", opacity: 1, filter: "blur(0)", offset: .7 },
+        { transform: "rotate(-7deg) scale(1)", opacity: 1 },
+      ],
+      { duration: 620, delay: 480, easing: "cubic-bezier(.2,1.4,.3,1)", fill: "both" }
+    );
+
+    // radar sweep over the shot
+    sweep.animate(
+      [{ left: "-45%" }, { left: "115%" }],
+      { duration: 1100, delay: 300, easing: "ease-out" }
+    );
+
+    // stagger receipts
+    receipt.querySelectorAll("li").forEach((li, i) => {
+      li.animate(
+        [{ opacity: 0, transform: "translateX(-10px)" }, { opacity: 1, transform: "none" }],
+        { duration: 360, delay: 500 + i * 90, easing: "ease-out", fill: "backwards" }
+      );
+    });
+  }
+
+  // roast tone toggle
+  const ROASTS = {
+    brutal: "This site has never met a human hand. Prompt, deploy, pray — and ship the lorem ipsum while you're at it.",
+    nice: "Shipped fast, and it shows! A handful of AI tells slipped through — clean those up and nobody will ever know. 😉",
+  };
+  document.querySelectorAll(".roast .toggle button").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".roast .toggle button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      document.getElementById("roastline").textContent = ROASTS[b.dataset.tone];
+    });
+  });
+
+  // tiny toast for share
+  function flash(el, msg) {
+    const old = el.textContent; el.textContent = msg; el.disabled = true;
+    setTimeout(() => { el.textContent = old; el.disabled = false; }, 1300);
+  }
+
+  // home counter tick
+  if (!reduce) {
+    let n = 12438;
+    setInterval(() => {
+      const home = document.getElementById("view-home");
+      if (home.classList.contains("is-active") && Math.random() > .55) {
+        n++; document.getElementById("counter").textContent = n.toLocaleString();
+      }
+    }, 2200);
+  }
+</script>

@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/* ── Design tokens (from the approved Slopdar design) ─────────────────────── */
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --ink: #191512;
+  --ink2: #5b554c;
+  --mut: #938d7e;
+  --line: #eae5d8;
+  --line2: #dbd5c5;
+  --brand: #ff4d24;
+  /* tier colors */
+  --t1: #10b95e;
+  --t2: #ffb81f;
+  --t3: #ff7a1a;
+  --t4: #ff3b30;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+body {
+  font-family: var(--font-archivo), "Archivo", sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection { background: var(--brand); color: #fff; }
+input::placeholder { color: #b3ae9f; }
+a { color: inherit; }
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes blip { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,77,36,.45); } 50% { opacity: .5; box-shadow: 0 0 0 6px rgba(255,77,36,0); } }
+@keyframes glowpulse { 0%,100% { transform: scale(1); box-shadow: 0 8px 0 rgba(0,0,0,.12); } 50% { transform: scale(1.03); box-shadow: 0 14px 34px rgba(255,77,36,.4); } }
+@keyframes wobble { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes flick { 0%,100% { opacity: .9; } 50% { opacity: .3; } }
+@keyframes stampin { 0% { transform: scale(2.3) rotate(10deg); opacity: 0; } 50% { opacity: 1; } 72% { transform: scale(.9) rotate(-6deg); } 100% { transform: scale(1) rotate(-4deg); opacity: 1; } }
+@keyframes shake { 10%,90% { transform: translateX(-2px); } 20%,80% { transform: translateX(4px); } 30%,50%,70% { transform: translateX(-8px); } 40%,60% { transform: translateX(8px); } }
+@keyframes fall { 0% { transform: translateY(-40px) rotate(0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateY(470px) rotate(400deg); opacity: 0; } }
+@keyframes popA { 0% { transform: scale(.9); opacity: .25; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes popB { 0% { transform: scale(.92); opacity: .25; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes alarm { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+@keyframes barfill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ── Hover helpers (the design used inline style-hover; these replace it) ──── */
+.h-brand:hover { background: #ff3a0c !important; }
+.h-ink:hover { background: var(--ink) !important; color: var(--bg) !important; }
+.h-ink-strong:hover { background: #000 !important; }
+.h-underline:hover { text-decoration: underline !important; }
+.h-brandtext:hover { color: var(--brand) !important; }
+.h-rowfaint:hover { background: #fafafa; }
+.h-rowshame:hover { background: #fff4f2; }
+.h-rowfame:hover { background: #f0fbf5; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
