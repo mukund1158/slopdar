@@ -179,8 +179,9 @@ export default function SlopdarApp() {
         <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: 19 }}>Slopdar</span>
       </div>
       <nav style={{ display: "flex", alignItems: "center", gap: 22, fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
-        <Link href="/about" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>How it works</Link>
         <Link href="/leaderboard" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Leaderboard</Link>
+        <Link href="/how-it-works" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>How it works</Link>
+        <Link href="/about" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>About</Link>
         <span style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--mut)" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--t1)", display: "inline-block", animation: "flick 1.5s steps(1) infinite" }} />ROASTING LIVE
         </span>
