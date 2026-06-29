@@ -6,6 +6,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import LeaderboardView from "@/components/LeaderboardView";
+import SiteHeader from "@/components/SiteHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -38,16 +39,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: SANS, color: "var(--ink)", background: "var(--bg)" }}>
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 28px", borderBottom: "2px solid var(--ink)" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "inherit" }}>
-          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--brand)" }} />
-          <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: 19 }}>Slopdar</span>
-        </Link>
-        <nav style={{ display: "flex", gap: 22, fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
-          <Link href="/about" style={{ color: "inherit", textDecoration: "none" }}>How it works</Link>
-          <Link href="/" style={{ color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Scan a site →</Link>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main style={{ flex: "1 0 auto", maxWidth: 900, margin: "0 auto", padding: "46px 28px 30px", width: "100%" }}>
         <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--mut)" }}>The board</div>
@@ -67,7 +59,10 @@ export default async function LeaderboardPage() {
 
       <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
         <span>Slopdar runs on the slop stack. We know.</span>
-        <Link href="/about" style={{ color: "inherit" }}>How it works →</Link>
+        <span style={{ display: "flex", gap: 18 }}>
+          <Link href="/how-it-works" style={{ color: "inherit" }}>How it works</Link>
+          <Link href="/about" style={{ color: "inherit" }}>About →</Link>
+        </span>
       </footer>
     </div>
   );

@@ -52,6 +52,8 @@ a { color: inherit; }
 .h-rowfaint:hover { background: #fafafa; }
 .h-rowshame:hover { background: #fff4f2; }
 .h-rowfame:hover { background: #f0fbf5; }
+.h-lift { transition: transform .12s ease, box-shadow .12s ease; }
+.h-lift:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.12); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

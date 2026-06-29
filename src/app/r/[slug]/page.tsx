@@ -10,6 +10,7 @@ import { tierOf } from "@/lib/tiers";
 import { roastSetFor } from "@/lib/roasts";
 import { categoryLabel } from "@/lib/categories";
 import { SANS, MONO } from "@/components/slopdar/ui";
+import SiteHeader from "@/components/SiteHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -65,16 +66,7 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: SANS, color: "var(--ink)", background: "var(--bg)" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 28px", borderBottom: "2px solid var(--ink)" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "inherit" }}>
-          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--brand)" }} />
-          <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: 19 }}>Slopdar</span>
-        </Link>
-        <nav style={{ display: "flex", gap: 22, fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
-          <Link href="/leaderboard" style={{ color: "inherit", textDecoration: "none" }}>Leaderboard</Link>
-          <Link href="/" style={{ color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Scan a site →</Link>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main style={{ flex: "1 0 auto" }}>
         <section style={{ background: tier.tint, borderBottom: "2px solid var(--ink)" }}>
@@ -168,7 +160,7 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
       <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
         <span>Slopdar runs on the slop stack. We know.</span>
         <span style={{ display: "flex", gap: 18 }}>
-          <Link href="/about" style={{ color: "inherit" }}>How it works</Link>
+          <Link href="/how-it-works" style={{ color: "inherit" }}>How it works</Link>
           <Link href="/leaderboard" style={{ color: "inherit" }}>Leaderboard →</Link>
         </span>
       </footer>
