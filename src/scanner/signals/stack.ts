@@ -55,4 +55,19 @@ export const stackSignals: SignalRule[] = [
       return onVercel && isNext && hasSupabase ? { evidence: "Next + Vercel + Supabase" } : null;
     },
   },
+
+  // ── Tier B: modern AI-build backends ──────────────────────────────────────
+  {
+    id: "stack.modern-backends",
+    category: "stack",
+    weight: 8,
+    label: "Modern AI-build backend",
+    description: "Backend services common to AI-built apps (Convex, Clerk, Neon, etc.) were detected.",
+    test: (ctx) => {
+      const html = rawHtml(ctx);
+      const markers = ["convex.cloud", "convex.dev", "clerk.accounts.dev", "clerk.com", "neon.tech", "planetscale", "resend.com"];
+      const hit = markers.find((m) => html.includes(m));
+      return hit ? { evidence: hit } : null;
+    },
+  },
 ];

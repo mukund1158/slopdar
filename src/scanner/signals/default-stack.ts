@@ -60,4 +60,28 @@ export const defaultStackSignals: SignalRule[] = [
       return null;
     },
   },
+
+  // ── Tier B: deeper default-stack fingerprints ─────────────────────────────
+  {
+    id: "default.radix",
+    category: "default-stack",
+    weight: 10,
+    label: "Radix UI primitives",
+    description: "Radix UI primitives (the shadcn/ui foundation) were detected.",
+    test: (ctx) => (rawHtml(ctx).includes("data-radix") ? { evidence: "data-radix-* attributes" } : null),
+  },
+  {
+    id: "default.vite-build",
+    category: "default-stack",
+    weight: 8,
+    label: "Default Vite build",
+    description: "An untouched Vite build signature was detected.",
+    test: (ctx) => {
+      const html = rawHtml(ctx);
+      if (/\/assets\/index-[a-z0-9]{6,}\.js/.test(html) && html.includes('type="module"')) {
+        return { evidence: "Vite default asset bundle" };
+      }
+      return null;
+    },
+  },
 ];
