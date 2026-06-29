@@ -56,9 +56,10 @@ export default async function LeaderboardPage() {
 
         <LeaderboardView shame={toRows(shame)} fame={toRows(fame)} />
 
-        {/* Server-rendered links for crawlers (hidden from view; the island above is the UI). */}
+        {/* Server-rendered links for crawlers (hidden from view; the island above is the UI).
+            Dedupe by slug — shame and fame can overlap when there are < 200 sites. */}
         <div style={{ display: "none" }} aria-hidden="true">
-          {[...shame, ...fame].map((r) => (
+          {Array.from(new Map([...shame, ...fame].map((r) => [r.slug, r])).values()).map((r) => (
             <Link key={r.slug} href={`/r/${r.slug}`}>{r.host}</Link>
           ))}
         </div>
