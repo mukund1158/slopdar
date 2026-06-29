@@ -5,12 +5,13 @@
 // modals. Home and Result are wired to the live POST /api/check scanner; the
 // leaderboard reads GET /api/leaderboard. Roast/reaction copy comes from lib.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { tierOf } from "@/lib/tiers";
 import { categoryLabel } from "@/lib/categories";
 import { roastSetFor } from "@/lib/roasts";
 import { SANS, MONO, card, btnBrand, btnGhost } from "@/components/slopdar/ui";
 
-type Screen = "home" | "scanning" | "result" | "unreachable" | "leaderboard" | "legal";
+type Screen = "home" | "scanning" | "result" | "unreachable" | "legal";
 
 interface Receipt { id: string; category: string; label: string; description: string; weight: number; evidence?: string }
 interface Tech { name: string; category?: string; confidence: number }
@@ -76,9 +77,6 @@ export default function SlopdarApp() {
   const [embedDomain, setEmbedDomain] = useState("yoursite.com");
   const [embedScore, setEmbedScore] = useState<number | null>(null);
 
-  const [leaderTab, setLeaderTab] = useState<"shame" | "fame">("shame");
-  const [leaderPage, setLeaderPage] = useState(0);
-  const [leaderQuery, setLeaderQuery] = useState("");
   const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -171,22 +169,6 @@ export default function SlopdarApp() {
   const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight).filter((w) => w > 0));
   const isSlop = screen === "result" && (result?.score ?? 0) > 75;
 
-  // ── leaderboard (client-side filter/paginate over fetched rows) ──────────
-  const lb = useMemo(() => {
-    const all = (leaderTab === "fame" ? board?.fame : board?.shame) ?? [];
-    const q = leaderQuery.trim().toLowerCase();
-    const filtered = q ? all.filter((r) => r.domain.toLowerCase().includes(q)) : all;
-    const size = 10;
-    const totalPages = Math.max(1, Math.ceil(filtered.length / size));
-    const page = Math.min(leaderPage, totalPages - 1);
-    return {
-      rows: filtered.slice(page * size, page * size + size),
-      empty: filtered.length === 0,
-      count: `${filtered.length} ${filtered.length === 1 ? "site" : "sites"}`,
-      page, totalPages,
-    };
-  }, [board, leaderTab, leaderQuery, leaderPage]);
-
   const counterFmt = board ? board.total.toLocaleString("en-US") : "…";
 
   // ───────────────────────────── render helpers ───────────────────────────
@@ -197,7 +179,8 @@ export default function SlopdarApp() {
         <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: 19 }}>Slopdar</span>
       </div>
       <nav style={{ display: "flex", alignItems: "center", gap: 22, fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
-        <a className="h-brandtext" style={{ textDecoration: "none", cursor: "pointer" }} onClick={() => { setScreen("leaderboard"); window.scrollTo(0, 0); }}>Leaderboard</a>
+        <Link href="/about" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>How it works</Link>
+        <Link href="/leaderboard" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Leaderboard</Link>
         <span style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--mut)" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--t1)", display: "inline-block", animation: "flick 1.5s steps(1) infinite" }} />ROASTING LIVE
         </span>
@@ -285,7 +268,7 @@ export default function SlopdarApp() {
             <h2 style={{ fontWeight: 900, fontSize: "clamp(30px,4.8vw,46px)", letterSpacing: "-.03em", margin: 0 }}>The leaderboard</h2>
             <div style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", marginTop: 5 }}>Updated live. Mostly slop. Tap any site to re-roast it.</div>
           </div>
-          <a className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600, cursor: "pointer" }} onClick={() => { setScreen("leaderboard"); window.scrollTo(0, 0); }}>Full board →</a>
+          <Link href="/leaderboard" className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Full board →</Link>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {boardCard("Wall of Shame", "Sloppiest sites this week", "🔥", "#FFECEA", "h-rowshame", (board?.shame ?? []).slice(0, 5))}
@@ -492,55 +475,6 @@ export default function SlopdarApp() {
     </section>
   );
 
-  const renderLeaderboard = () => (
-    <section style={{ maxWidth: 900, margin: "0 auto", padding: "46px 28px 30px" }}>
-      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--mut)" }}>The board</div>
-      <h1 style={{ fontWeight: 900, fontSize: "clamp(34px,6vw,60px)", letterSpacing: "-.035em", margin: "8px 0 0", lineHeight: .96 }}>The Leaderboard</h1>
-      <p style={{ fontSize: 15, lineHeight: 1.5, color: "var(--ink2)", margin: "12px 0 0", maxWidth: 520 }}>The web&apos;s sloppiest and most hand-crafted sites. Tap any site to run it through the radar yourself.</p>
-
-      <div style={{ display: "inline-flex", marginTop: 22, background: "#F1F1F1", border: "2px solid var(--ink)", borderRadius: 11, padding: 4, gap: 4 }}>
-        {(["shame", "fame"] as const).map((t) => (
-          <button key={t} onClick={() => { setLeaderTab(t); setLeaderPage(0); }} style={{ background: leaderTab === t ? "#191512" : "transparent", color: leaderTab === t ? "#fff" : "#191512", border: "none", borderRadius: 7, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: "9px 17px", cursor: "pointer" }}>{t === "shame" ? "🔥 Wall of Shame" : "✨ Hall of Fame"}</button>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 11, padding: "11px 14px", flex: 1, minWidth: 240, maxWidth: 420 }}>
-          <span style={{ fontFamily: MONO, color: "var(--mut)", fontSize: 15 }}>⌕</span>
-          <input value={leaderQuery} onChange={(e) => { setLeaderQuery(e.target.value); setLeaderPage(0); }} placeholder="Search sites…" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontFamily: MONO, fontSize: 14, color: "var(--ink)" }} />
-        </div>
-        <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>{lb.count}</span>
-      </div>
-
-      <div style={{ marginTop: 14, ...card, borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 0 rgba(0,0,0,.1)" }}>
-        {lb.empty ? (
-          <div style={{ padding: "42px 20px", textAlign: "center", fontFamily: MONO, fontSize: 13, color: "var(--mut)" }}>No sites yet. Go roast one.</div>
-        ) : lb.rows.map((r, i) => {
-          const t = tierOf(r.score);
-          return (
-            <button key={r.slug} className="h-rowfaint" onClick={() => doCheck(r.domain)} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", background: "transparent", border: "none", borderTop: "1px solid var(--line)", padding: "14px 20px", cursor: "pointer", textAlign: "left", fontFamily: SANS }}>
-              <span style={{ fontFamily: MONO, fontSize: 13, color: "var(--mut)", minWidth: 26 }}>{String(lb.page * 10 + i + 1).padStart(2, "0")}</span>
-              <span style={{ fontFamily: MONO, fontSize: 14, color: "var(--ink)", width: 180, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.domain}</span>
-              <span style={{ flex: 1, height: 8, background: "var(--line)", borderRadius: 5, overflow: "hidden", minWidth: 50 }}><span style={{ display: "block", height: "100%", width: `${r.score}%`, background: t.color }} /></span>
-              <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".04em", textTransform: "uppercase", color: t.color, width: 118, textAlign: "right", flexShrink: 0 }}>{t.label}</span>
-              <span style={{ fontWeight: 900, fontSize: 22, letterSpacing: "-.03em", color: t.color, minWidth: 42, textAlign: "right" }}>{r.score}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 18 }}>
-        <button onClick={() => setLeaderPage((p) => Math.max(0, p - 1))} style={{ ...btnGhost, fontWeight: 800, fontSize: 13, padding: "9px 16px", borderRadius: 9, opacity: lb.page > 0 ? 1 : .3, cursor: lb.page > 0 ? "pointer" : "default" }}>← Prev</button>
-        <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>Page {lb.page + 1} of {lb.totalPages}</span>
-        <button onClick={() => setLeaderPage((p) => Math.min(lb.totalPages - 1, p + 1))} style={{ ...btnGhost, fontWeight: 800, fontSize: 13, padding: "9px 16px", borderRadius: 9, opacity: lb.page < lb.totalPages - 1 ? 1 : .3, cursor: lb.page < lb.totalPages - 1 ? "pointer" : "default" }}>Next →</button>
-      </div>
-
-      <div style={{ marginTop: 24, textAlign: "center" }}>
-        <button className="h-brand" onClick={reset} style={{ ...btnBrand, fontSize: 15, padding: "14px 26px", borderRadius: 12 }}>Roast your own site →</button>
-      </div>
-    </section>
-  );
-
   const renderLegal = () => (
     <section style={{ maxWidth: 720, margin: "0 auto", padding: "46px 28px 30px" }}>
       <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--mut)" }}>The fine print (it&apos;s short)</div>
@@ -576,7 +510,6 @@ export default function SlopdarApp() {
         {screen === "scanning" && renderScanning()}
         {screen === "result" && renderResult()}
         {screen === "unreachable" && renderUnreachable()}
-        {screen === "leaderboard" && renderLeaderboard()}
         {screen === "legal" && renderLegal()}
       </main>
       {Footer}
