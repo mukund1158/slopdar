@@ -21,21 +21,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const check = await db.check.findUnique({
     where: { slug },
-    select: { host: true, score: true, tier: true, screenshot: true },
+    select: { host: true, score: true, tier: true },
   });
   if (!check) return { title: "Result not found", robots: { index: false } };
 
   const title = `${check.host} scored ${check.score}/100 on Slopdar`;
   const description = `${check.host} looks ${check.tier} (Slop Score ${check.score}/100). See the AI and vibe-coding tells Slopdar found. Signals, not proof.`;
   const url = `/r/${slug}`;
-  const images = check.screenshot ? [{ url: check.screenshot }] : undefined;
 
+  // og:image / twitter:image are provided automatically by opengraph-image.tsx.
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "article", images },
-    twitter: { card: "summary_large_image", title, description, images: check.screenshot ? [check.screenshot] : undefined },
+    openGraph: { title, description, url, type: "article" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
