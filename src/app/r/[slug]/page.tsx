@@ -167,7 +167,10 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
 
       <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
         <span>Slopdar runs on the slop stack. We know.</span>
-        <Link href="/leaderboard" style={{ color: "inherit" }}>See the leaderboard →</Link>
+        <span style={{ display: "flex", gap: 18 }}>
+          <Link href="/about" style={{ color: "inherit" }}>How it works</Link>
+          <Link href="/leaderboard" style={{ color: "inherit" }}>Leaderboard →</Link>
+        </span>
       </footer>
     </div>
   );
