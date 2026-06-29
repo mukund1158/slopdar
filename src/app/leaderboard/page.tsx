@@ -73,8 +73,9 @@ export default async function LeaderboardPage() {
         </div>
       </main>
 
-      <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
-        Slopdar runs on the slop stack. We know.
+      <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
+        <span>Slopdar runs on the slop stack. We know.</span>
+        <Link href="/about" style={{ color: "inherit" }}>How it works →</Link>
       </footer>
     </div>
   );
