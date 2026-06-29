@@ -70,4 +70,70 @@ export const leftoverSignals: SignalRule[] = [
       return null;
     },
   },
+
+  // ── Tier A: leftover AI artifacts (near-proof; weighted high) ─────────────
+  {
+    id: "leftover.ai-citation-tokens",
+    category: "leftover",
+    weight: 35,
+    label: "Leftover AI citation tokens",
+    description: "Tokens that AI assistants inject (oaicite / contentReference) were left in the page.",
+    test: (ctx) => {
+      const html = rawHtml(ctx);
+      const tokens = ["oaicite", "contentreference", "utm_source=chatgpt.com", "turn0search", "turn0news"];
+      const hit = tokens.find((t) => html.includes(t));
+      return hit ? { evidence: hit } : null;
+    },
+  },
+  {
+    id: "leftover.assistant-phrases",
+    category: "leftover",
+    weight: 30,
+    label: "Chatbot reply left in the copy",
+    description: 'Telltale assistant phrasing (e.g. "as an AI language model") is sitting in the visible text.',
+    test: (ctx) => {
+      const text = visibleText(ctx).toLowerCase();
+      const phrases = [
+        "as an ai language model",
+        "as a large language model",
+        "as an ai assistant",
+        "i'm sorry, but i can't",
+        "i cannot fulfill that",
+        "i hope this helps",
+        "i can't browse the internet",
+        "my knowledge cutoff",
+        "i'm just an ai",
+      ];
+      const hit = phrases.find((p) => text.includes(p));
+      return hit ? { evidence: snippet(hit) } : null;
+    },
+  },
+  {
+    id: "leftover.template-placeholders",
+    category: "leftover",
+    weight: 16,
+    label: "Unfilled template placeholders",
+    description: 'Bracketed template placeholders (like "[Your Company]") were never replaced.',
+    test: (ctx) => {
+      const text = visibleText(ctx);
+      const m = text.match(
+        /\[(?:your company|your name|insert[^\]]{0,30}|product name|company name|email|description|address)\]|tagline goes here|your_api_key|replace this (?:text|with)/i,
+      );
+      return m ? { evidence: snippet(m[0]) } : null;
+    },
+  },
+  {
+    id: "leftover.unrendered-markdown",
+    category: "leftover",
+    weight: 12,
+    label: "Raw markdown shown as text",
+    description: "Markdown syntax is visible on the page instead of being rendered.",
+    test: (ctx) => {
+      const text = visibleText(ctx);
+      if (/\*\*[^*\n]{2,80}\*\*/.test(text) || /\]\(https?:\/\//.test(text)) {
+        return { evidence: "literal markdown in visible text" };
+      }
+      return null;
+    },
+  },
 ];
