@@ -1,11 +1,11 @@
-// Server-rendered, crawlable leaderboard. Links to each /r/<slug> so search and
-// AI crawlers can discover every scored site. (The home page keeps its own
-// interactive leaderboard screen for users; this is the canonical SEO surface.)
+// Server-rendered /leaderboard: SEO shell + the interactive board (tabs, search,
+// pagination) as a client island, seeded with server-fetched rows so crawlers
+// still see real content and links to each /r/<slug>.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { tierOf } from "@/lib/tiers";
 import { SANS, MONO } from "@/components/slopdar/ui";
+import LeaderboardView from "@/components/LeaderboardView";
 
 export const dynamic = "force-dynamic";
 
@@ -21,33 +21,16 @@ export const metadata: Metadata = {
   },
 };
 
-function Column({ title, subtitle, headBg, rows }: { title: string; subtitle: string; headBg: string; rows: { host: string; slug: string; score: number }[] }) {
-  return (
-    <div style={{ flex: "1 1 360px", minWidth: 300, background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 16, overflow: "hidden", boxShadow: "0 5px 0 rgba(0,0,0,.09)" }}>
-      <div style={{ padding: "15px 18px", background: headBg, borderBottom: "2px solid var(--ink)" }}>
-        <div style={{ fontWeight: 900, fontSize: 17, lineHeight: 1 }}>{title}</div>
-        <div style={{ fontFamily: MONO, fontSize: 11, color: "var(--ink2)", marginTop: 3 }}>{subtitle}</div>
-      </div>
-      {rows.length === 0 ? (
-        <div style={{ padding: "22px 18px", fontFamily: MONO, fontSize: 12.5, color: "var(--mut)" }}>No sites yet. Be the first.</div>
-      ) : rows.map((r, i) => (
-        <Link key={r.slug} href={`/r/${r.slug}`} style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 18px", borderTop: "1px solid var(--line)", textDecoration: "none", color: "inherit" }}>
-          <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 20 }}>{String(i + 1).padStart(2, "0")}</span>
-          <span style={{ fontFamily: MONO, fontSize: 13.5, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.host}</span>
-          <span style={{ fontWeight: 900, fontSize: 23, letterSpacing: "-.03em", color: tierOf(r.score).color }}>{r.score}</span>
-        </Link>
-      ))}
-    </div>
-  );
-}
+interface Row { host: string; slug: string; score: number }
+const toRows = (rows: Row[]) => rows.map((r) => ({ domain: r.host, slug: r.slug, score: r.score }));
 
 export default async function LeaderboardPage() {
-  let shame: { host: string; slug: string; score: number }[] = [];
-  let fame: { host: string; slug: string; score: number }[] = [];
+  let shame: Row[] = [];
+  let fame: Row[] = [];
   try {
     [shame, fame] = await Promise.all([
-      db.check.findMany({ orderBy: { score: "desc" }, take: 25, select: { host: true, slug: true, score: true } }),
-      db.check.findMany({ orderBy: { score: "asc" }, take: 25, select: { host: true, slug: true, score: true } }),
+      db.check.findMany({ orderBy: { score: "desc" }, take: 100, select: { host: true, slug: true, score: true } }),
+      db.check.findMany({ orderBy: { score: "asc" }, take: 100, select: { host: true, slug: true, score: true } }),
     ]);
   } catch {
     /* DB unavailable — render empty board */
@@ -60,16 +43,24 @@ export default async function LeaderboardPage() {
           <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--brand)" }} />
           <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: 19 }}>Slopdar</span>
         </Link>
-        <Link href="/" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Scan a site →</Link>
+        <nav style={{ display: "flex", gap: 22, fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
+          <Link href="/about" style={{ color: "inherit", textDecoration: "none" }}>How it works</Link>
+          <Link href="/" style={{ color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Scan a site →</Link>
+        </nav>
       </header>
 
-      <main style={{ flex: "1 0 auto", maxWidth: 1060, margin: "0 auto", padding: "46px 28px", width: "100%" }}>
+      <main style={{ flex: "1 0 auto", maxWidth: 900, margin: "0 auto", padding: "46px 28px 30px", width: "100%" }}>
         <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--mut)" }}>The board</div>
         <h1 style={{ fontWeight: 900, fontSize: "clamp(34px,6vw,60px)", letterSpacing: "-.035em", margin: "8px 0 0", lineHeight: .96 }}>The Leaderboard</h1>
-        <p style={{ fontSize: 15, lineHeight: 1.5, color: "var(--ink2)", margin: "12px 0 22px", maxWidth: 560 }}>The web&apos;s sloppiest and most hand-crafted sites, scored 0–100 by Slopdar. Tap any site to see its receipts.</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-          <Column title="Wall of Shame" subtitle="Sloppiest sites" headBg="#FFECEA" rows={shame} />
-          <Column title="Hall of Fame" subtitle="Most hand-crafted" headBg="#EAF9F0" rows={fame} />
+        <p style={{ fontSize: 15, lineHeight: 1.5, color: "var(--ink2)", margin: "12px 0 0", maxWidth: 520 }}>The web&apos;s sloppiest and most hand-crafted sites, scored 0–100 by Slopdar. Tap any site to see its receipts.</p>
+
+        <LeaderboardView shame={toRows(shame)} fame={toRows(fame)} />
+
+        {/* Server-rendered links for crawlers (hidden from view; the island above is the UI). */}
+        <div style={{ display: "none" }} aria-hidden="true">
+          {[...shame, ...fame].map((r) => (
+            <Link key={r.slug} href={`/r/${r.slug}`}>{r.host}</Link>
+          ))}
         </div>
       </main>
 
