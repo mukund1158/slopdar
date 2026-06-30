@@ -56,8 +56,13 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       >
         <div style={{ ...row, justifyContent: "space-between" }}>
           <div style={row}>
-            <div style={{ display: "flex", width: 26, height: 26, borderRadius: 26, background: BRAND, marginRight: 16 }} />
-            <div style={{ display: "flex", fontSize: 44, fontWeight: 800, letterSpacing: "-2px", color: INK }}>Slopdar</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 16, background: BRAND, marginRight: 18 }}>
+              <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-2px", color: "#fff" }}>S</span>
+            </div>
+            <div style={{ display: "flex", fontSize: 44, fontWeight: 800, letterSpacing: "-2px" }}>
+              <span style={{ color: INK }}>Slop</span>
+              <span style={{ color: BRAND }}>dar</span>
+            </div>
           </div>
           <div style={{ display: "flex", fontSize: 30, color: INK2 }}>{host}</div>
         </div>

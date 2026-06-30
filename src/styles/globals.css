@@ -55,6 +55,24 @@ a { color: inherit; }
 .h-lift { transition: transform .12s ease, box-shadow .12s ease; }
 .h-lift:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.12); }
 
+/* ── Header / nav responsiveness ─────────────────────────────────────────── */
+.site-nav { display: flex; align-items: center; gap: 22px; }
+.nav-burger { display: none; background: none; border: 0; padding: 4px; cursor: pointer; font-size: 22px; line-height: 1; color: var(--ink); }
+@media (max-width: 640px) {
+  .nav-burger { display: inline-flex; }
+  .site-nav {
+    position: absolute; top: calc(100% + 6px); right: 14px;
+    display: none; flex-direction: column; align-items: flex-start; gap: 16px;
+    background: var(--bg); border: 2px solid var(--ink); border-radius: 12px;
+    padding: 18px 22px; box-shadow: 0 8px 0 rgba(0, 0, 0, .12); min-width: 190px;
+  }
+  .site-nav.is-open { display: flex; }
+  .site-nav .roasting { display: none; }
+}
+
+/* Decorative hero tags collide with the headline on small screens. */
+@media (max-width: 768px) { .hero-tag { display: none !important; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

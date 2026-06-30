@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import LeaderboardView from "@/components/LeaderboardView";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -57,13 +58,7 @@ export default async function LeaderboardPage() {
         </div>
       </main>
 
-      <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
-        <span>Slopdar runs on the slop stack. We know.</span>
-        <span style={{ display: "flex", gap: 18 }}>
-          <Link href="/how-it-works" style={{ color: "inherit" }}>How it works</Link>
-          <Link href="/about" style={{ color: "inherit" }}>About →</Link>
-        </span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
