@@ -1,11 +1,11 @@
 // Dynamic share-card image for each result: /r/<slug>/opengraph-image
-// Rendered with Next's ImageResponse (Satori / @vercel/og). Next automatically
-// wires the og:image + twitter:image tags to this file.
+// Rendered with Next's ImageResponse (Satori / @vercel/og), using the same fonts
+// (Archivo + IBM Plex Mono) and layout as the in-app share card so the social
+// preview matches the modal card.
 //
-// Satori rule: every <div> with more than one child MUST set display:flex. To
-// stay safe we give every div an explicit display:flex and keep each leaf to a
-// single string child.
+// Satori rule: every <div> with more than one child MUST set display:flex.
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
 import { db } from "@/lib/db";
 import { tierOf } from "@/lib/tiers";
 import { roastSetFor } from "@/lib/roasts";
@@ -19,16 +19,20 @@ const INK = "#191512";
 const BRAND = "#FF4D24";
 const MUT = "#938D7E";
 const INK2 = "#5b554c";
+const MONO = "IBM Plex Mono";
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  const check = await db.check
-    .findUnique({
-      where: { slug },
-      select: { host: true, score: true, signals: { where: { weight: { gt: 0 } }, select: { id: true } } },
-    })
-    .catch(() => null);
+  const [check, archivo900, archivoItalic, plex400, plex600] = await Promise.all([
+    db.check
+      .findUnique({ where: { slug }, select: { host: true, score: true, signals: { where: { weight: { gt: 0 } }, select: { id: true } } } })
+      .catch(() => null),
+    readFile(new URL("./fonts/archivo-900.woff", import.meta.url)),
+    readFile(new URL("./fonts/archivo-700-italic.woff", import.meta.url)),
+    readFile(new URL("./fonts/plexmono-400.woff", import.meta.url)),
+    readFile(new URL("./fonts/plexmono-600.woff", import.meta.url)),
+  ]);
 
   const host = check?.host ?? slug;
   const score = check?.score ?? 0;
@@ -49,44 +53,34 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           flexDirection: "column",
           justifyContent: "space-between",
           background: tier.tint,
-          border: `14px solid ${INK}`,
+          border: `8px solid ${INK}`,
           padding: "54px 64px",
-          fontFamily: "sans-serif",
+          fontFamily: "Archivo",
+          fontWeight: 900,
         }}
       >
+        {/* top: logo + domain */}
         <div style={{ ...row, justifyContent: "space-between" }}>
           <div style={row}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 16, background: BRAND, marginRight: 18 }}>
-              <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-2px", color: "#fff" }}>S</span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 60, height: 60, borderRadius: 16, background: BRAND, marginRight: 18 }}>
+              <span style={{ fontSize: 42, fontWeight: 900, letterSpacing: "-2px", color: "#fff" }}>S</span>
             </div>
-            <div style={{ display: "flex", fontSize: 44, fontWeight: 800, letterSpacing: "-2px" }}>
+            <div style={{ display: "flex", fontSize: 46, fontWeight: 900, letterSpacing: "-2px" }}>
               <span style={{ color: INK }}>Slop</span>
               <span style={{ color: BRAND }}>dar</span>
             </div>
           </div>
-          <div style={{ display: "flex", fontSize: 30, color: INK2 }}>{host}</div>
+          <div style={{ display: "flex", fontFamily: MONO, fontWeight: 400, fontSize: 28, color: INK2 }}>{host}</div>
         </div>
 
+        {/* middle: score + verdict */}
         <div style={row}>
           <div style={{ ...col, marginRight: 56 }}>
-            <div style={{ display: "flex", fontSize: 300, fontWeight: 800, lineHeight: 1, letterSpacing: "-12px", color: tier.color }}>{String(score)}</div>
-            <div style={{ display: "flex", fontSize: 26, letterSpacing: "3px", color: MUT, marginTop: 8 }}>SLOP SCORE / 100</div>
+            <div style={{ display: "flex", fontSize: 300, fontWeight: 900, lineHeight: 1, letterSpacing: "-12px", color: tier.color }}>{String(score)}</div>
+            <div style={{ display: "flex", fontFamily: MONO, fontWeight: 600, fontSize: 24, letterSpacing: "4px", color: MUT, marginTop: 10 }}>SLOP SCORE / 100</div>
           </div>
           <div style={{ ...col, flex: 1 }}>
-            <div
-              style={{
-                display: "flex",
-                background: tier.color,
-                color: "#fff",
-                fontSize: 38,
-                fontWeight: 800,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                border: `4px solid ${INK}`,
-                borderRadius: 12,
-                padding: "8px 22px",
-              }}
-            >
+            <div style={{ display: "flex", background: tier.color, color: "#fff", fontSize: 38, fontWeight: 900, letterSpacing: "1px", textTransform: "uppercase", border: `4px solid ${INK}`, borderRadius: 12, padding: "8px 22px" }}>
               {tier.label}
             </div>
             <div style={{ display: "flex", fontSize: 40, fontWeight: 700, fontStyle: "italic", color: INK, lineHeight: 1.25, marginTop: 26 }}>
@@ -95,12 +89,22 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           </div>
         </div>
 
-        <div style={{ ...row, justifyContent: "space-between", borderTop: `4px solid ${INK}`, paddingTop: 22, fontSize: 28, color: INK2 }}>
+        {/* footer */}
+        <div style={{ ...row, justifyContent: "space-between", borderTop: `3px solid ${INK}`, paddingTop: 22, fontFamily: MONO, fontWeight: 400, fontSize: 26, color: INK2 }}>
           <div style={{ display: "flex" }}>{`${tellCount} tells · roasted by Slopdar`}</div>
-          <div style={{ display: "flex", color: BRAND, fontWeight: 700 }}>slopdar.com</div>
+          <div style={{ display: "flex", fontWeight: 600, color: BRAND }}>slopdar.com</div>
         </div>
       </div>
     ),
-    { ...size, headers: { "cache-control": "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400" } },
+    {
+      ...size,
+      headers: { "cache-control": "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400" },
+      fonts: [
+        { name: "Archivo", data: archivo900, weight: 900, style: "normal" },
+        { name: "Archivo", data: archivoItalic, weight: 700, style: "italic" },
+        { name: MONO, data: plex400, weight: 400, style: "normal" },
+        { name: MONO, data: plex600, weight: 600, style: "normal" },
+      ],
+    },
   );
 }
