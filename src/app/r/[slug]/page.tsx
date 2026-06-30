@@ -11,6 +11,7 @@ import { roastSetFor } from "@/lib/roasts";
 import { categoryLabel } from "@/lib/categories";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -123,14 +124,16 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
             {tells.length === 0 ? (
               <p style={{ margin: "16px 0 0", fontSize: 15, color: "var(--ink2)" }}>No tells found. Suspiciously clean. A human probably touched this. Respect.</p>
             ) : tells.map((r, i) => (
-              <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
-                <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 22 }}>{String(i + 1).padStart(2, "0")}</span>
+              <div key={r.id} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
+                <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 22, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15.5, fontWeight: 700 }}>{r.label}</div>
-                  <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 2 }}>{r.description}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                    <span style={{ fontSize: 15.5, fontWeight: 700 }}>{r.label}</span>
+                    <span style={{ fontWeight: 900, fontSize: 17, color: tier.color, flexShrink: 0 }}>+{r.weight}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 3 }}>{r.description}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", marginTop: 8 }}>{categoryLabel(r.category)}</div>
                 </div>
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", minWidth: 108, textAlign: "right" }}>{categoryLabel(r.category)}</span>
-                <span style={{ fontWeight: 900, fontSize: 17, minWidth: 46, textAlign: "right", color: tier.color }}>+{r.weight}</span>
               </div>
             ))}
 
@@ -141,13 +144,16 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
                   <span style={{ flex: 1, height: 2, background: "var(--line)" }} />
                 </div>
                 {human.map((r) => (
-                  <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
-                    <span style={{ fontFamily: MONO, fontSize: 15, color: "#10B95E", minWidth: 22, textAlign: "center" }}>✓</span>
+                  <div key={r.id} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
+                    <span style={{ fontFamily: MONO, fontSize: 15, color: "#10B95E", minWidth: 22, textAlign: "center", paddingTop: 2 }}>✓</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15.5, fontWeight: 700 }}>{r.label}</div>
-                      <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 2 }}>{r.description}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                        <span style={{ fontSize: 15.5, fontWeight: 700 }}>{r.label}</span>
+                        <span style={{ fontWeight: 900, fontSize: 17, color: "#10B95E", flexShrink: 0 }}>{r.weight}</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 3 }}>{r.description}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", marginTop: 8 }}>{categoryLabel(r.category)}</div>
                     </div>
-                    <span style={{ fontWeight: 900, fontSize: 17, minWidth: 46, textAlign: "right", color: "#10B95E" }}>{r.weight}</span>
                   </div>
                 ))}
               </>
@@ -157,13 +163,7 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
         </section>
       </main>
 
-      <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
-        <span>Slopdar runs on the slop stack. We know.</span>
-        <span style={{ display: "flex", gap: 18 }}>
-          <Link href="/how-it-works" style={{ color: "inherit" }}>How it works</Link>
-          <Link href="/leaderboard" style={{ color: "inherit" }}>Leaderboard →</Link>
-        </span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

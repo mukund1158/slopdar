@@ -10,8 +10,10 @@ import { tierOf } from "@/lib/tiers";
 import { categoryLabel } from "@/lib/categories";
 import { roastSetFor } from "@/lib/roasts";
 import { SANS, MONO, card, btnBrand, btnGhost } from "@/components/slopdar/ui";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
-type Screen = "home" | "scanning" | "result" | "unreachable" | "legal";
+type Screen = "home" | "scanning" | "result" | "unreachable";
 
 interface Receipt { id: string; category: string; label: string; description: string; weight: number; evidence?: string }
 interface Tech { name: string; category?: string; confidence: number }
@@ -72,6 +74,7 @@ export default function SlopdarApp() {
   const [scanPct, setScanPct] = useState(0);
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
   const [embedDomain, setEmbedDomain] = useState("yoursite.com");
@@ -161,6 +164,43 @@ export default function SlopdarApp() {
     setEmbedCopied(true);
   };
 
+  // Copy/Download rasterize the actual on-screen share card, so the saved image
+  // matches the preview exactly.
+  const shareCardRef = useRef<HTMLDivElement>(null);
+  const exportCard = useCallback(async (): Promise<Blob | null> => {
+    const node = shareCardRef.current;
+    if (!node) return null;
+    const { toBlob } = await import("html-to-image");
+    return toBlob(node, { pixelRatio: 2, cacheBust: true });
+  }, []);
+  const copyShareImage = useCallback(async () => {
+    try {
+      const blob = await exportCard();
+      if (!blob) return;
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 1600);
+    } catch {
+      // Clipboard image write unsupported on this browser — Download still works.
+    }
+  }, [exportCard]);
+  const downloadShareImage = useCallback(async () => {
+    try {
+      const blob = await exportCard();
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `slopdar-${result?.host ?? "site"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* ignore */
+    }
+  }, [exportCard, result]);
+
   // ── derived (result) ─────────────────────────────────────────────────────
   const tier = useMemo(() => tierOf(result?.score ?? 0), [result]);
   const rset = useMemo(() => roastSetFor(tier.label), [tier.label]);
@@ -172,32 +212,9 @@ export default function SlopdarApp() {
   const counterFmt = board ? board.total.toLocaleString("en-US") : "…";
 
   // ───────────────────────────── render helpers ───────────────────────────
-  const Header = (
-    <header style={{ position: "sticky", top: 0, zIndex: 40, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 28px", borderBottom: "2px solid var(--ink)", background: "var(--bg)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={reset}>
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--brand)", display: "inline-block", animation: "blip 1.8s ease-in-out infinite" }} />
-        <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: 19 }}>Slopdar</span>
-      </div>
-      <nav style={{ display: "flex", alignItems: "center", gap: 22, fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
-        <Link href="/leaderboard" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Leaderboard</Link>
-        <Link href="/how-it-works" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>How it works</Link>
-        <Link href="/about" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>About</Link>
-        <span style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--mut)" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--t1)", display: "inline-block", animation: "flick 1.5s steps(1) infinite" }} />ROASTING LIVE
-        </span>
-      </nav>
-    </header>
-  );
+  const Header = <SiteHeader onLogoClick={reset} />;
 
-  const Footer = (
-    <footer style={{ position: "relative", zIndex: 10, borderTop: "2px solid var(--ink)", marginTop: 48, padding: "22px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-      <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>Slopdar runs on the slop stack. We know.</span>
-      <div style={{ display: "flex", gap: 20, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
-        <a className="h-brandtext" style={{ textDecoration: "none", cursor: "pointer" }} onClick={() => { setScreen("legal"); window.scrollTo(0, 0); }}>Privacy &amp; Terms</a>
-        <span>© 2026</span>
-      </div>
-    </footer>
-  );
+  const Footer = <SiteFooter />;
 
   const ticker = (
     <div style={{ marginTop: 30, borderTop: "2px solid var(--ink)", borderBottom: "2px solid var(--ink)", background: "var(--ink)", overflow: "hidden", whiteSpace: "nowrap" }}>
@@ -235,8 +252,8 @@ export default function SlopdarApp() {
   const renderHome = () => (
     <>
       <section style={{ position: "relative", maxWidth: 880, margin: "0 auto", padding: "78px 28px 30px", textAlign: "center" }}>
-        <div style={{ position: "absolute", top: 120, left: "4%", fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", background: "var(--t1)", color: "#fff", padding: "8px 12px", borderRadius: 8, transform: "rotate(-9deg)", animation: "wobble 4s ease-in-out infinite", boxShadow: "0 4px 0 rgba(0,0,0,.12)" }}>Certified?</div>
-        <div style={{ position: "absolute", top: 150, right: "3%", fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", background: "var(--ink)", color: "var(--bg)", padding: "8px 12px", borderRadius: 8, transform: "rotate(8deg)", animation: "wobble 4.6s ease-in-out infinite", boxShadow: "0 4px 0 rgba(0,0,0,.12)" }}>100% organic slop</div>
+        <div className="hero-tag" style={{ position: "absolute", top: 120, left: "4%", fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", background: "var(--t1)", color: "#fff", padding: "8px 12px", borderRadius: 8, transform: "rotate(-9deg)", animation: "wobble 4s ease-in-out infinite", boxShadow: "0 4px 0 rgba(0,0,0,.12)" }}>Certified?</div>
+        <div className="hero-tag" style={{ position: "absolute", top: 150, right: "3%", fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", background: "var(--ink)", color: "var(--bg)", padding: "8px 12px", borderRadius: 8, transform: "rotate(8deg)", animation: "wobble 4.6s ease-in-out infinite", boxShadow: "0 4px 0 rgba(0,0,0,.12)" }}>100% organic slop</div>
 
         <div style={{ position: "relative", zIndex: 2 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 9, fontFamily: MONO, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--brand)", fontWeight: 600 }}>A radar for slop · est. 2026</div>
@@ -427,15 +444,17 @@ export default function SlopdarApp() {
             {tells.length === 0 ? (
               <p style={{ margin: "16px 0 0", fontSize: 15, color: "var(--ink2)", lineHeight: 1.55 }}>No tells found. Suspiciously clean. A human probably touched this. Respect.</p>
             ) : tells.map((r, i) => (
-              <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
-                <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 22 }}>{String(i + 1).padStart(2, "0")}</span>
+              <div key={r.id} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
+                <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 22, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink)" }}>{r.label}</div>
-                  <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 2 }}>{r.description}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                    <span style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink)" }}>{r.label}</span>
+                    <span style={{ fontWeight: 900, fontSize: 17, color: tier.color, flexShrink: 0 }}>+{r.weight}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 3 }}>{r.description}</div>
                   <div style={{ height: 5, borderRadius: 3, background: "var(--line)", marginTop: 9, overflow: "hidden" }}><div style={{ height: "100%", width: `${Math.round((r.weight / maxW) * 100)}%`, background: tier.color, transformOrigin: "left", animation: "barfill .6s ease both" }} /></div>
+                  <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", marginTop: 8 }}>{categoryLabel(r.category)}</div>
                 </div>
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", minWidth: 108, textAlign: "right" }}>{categoryLabel(r.category)}</span>
-                <span style={{ fontWeight: 900, fontSize: 17, minWidth: 46, textAlign: "right", color: tier.color }}>+{r.weight}</span>
               </div>
             ))}
 
@@ -444,17 +463,19 @@ export default function SlopdarApp() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "20px 0 2px" }}>
                   <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "#10B95E", fontWeight: 600 }}>Signs a human was here</span>
                   <span style={{ flex: 1, height: 2, background: "var(--line)" }} />
-                  <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--mut)" }}>lowers the score</span>
+                  <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--mut)", whiteSpace: "nowrap" }}>lowers the score</span>
                 </div>
                 {humanHits.map((r) => (
-                  <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 15, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
-                    <span style={{ fontFamily: MONO, fontSize: 15, color: "#10B95E", minWidth: 22, textAlign: "center" }}>✓</span>
+                  <div key={r.id} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 2px", borderBottom: "1px solid var(--line)" }}>
+                    <span style={{ fontFamily: MONO, fontSize: 15, color: "#10B95E", minWidth: 22, textAlign: "center", paddingTop: 2 }}>✓</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink)" }}>{r.label}</div>
-                      <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 2 }}>{r.description}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                        <span style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink)" }}>{r.label}</span>
+                        <span style={{ fontWeight: 900, fontSize: 17, color: "#10B95E", flexShrink: 0 }}>{r.weight}</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 3 }}>{r.description}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", marginTop: 8 }}>{categoryLabel(r.category)}</div>
                     </div>
-                    <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--mut)", minWidth: 108, textAlign: "right" }}>{categoryLabel(r.category)}</span>
-                    <span style={{ fontWeight: 900, fontSize: 17, minWidth: 46, textAlign: "right", color: "#10B95E" }}>{r.weight}</span>
                   </div>
                 ))}
               </>
@@ -476,28 +497,6 @@ export default function SlopdarApp() {
     </section>
   );
 
-  const renderLegal = () => (
-    <section style={{ maxWidth: 720, margin: "0 auto", padding: "46px 28px 30px" }}>
-      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--mut)" }}>The fine print (it&apos;s short)</div>
-      <h1 style={{ fontWeight: 900, fontSize: "clamp(34px,6vw,58px)", letterSpacing: "-.035em", margin: "8px 0 0", lineHeight: .96 }}>Privacy &amp; Terms</h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink2)", margin: "12px 0 0" }}>No 40-page scroll, no dark patterns. Here&apos;s the honest version of what Slopdar does with your clicks, and what these scores actually mean.</p>
-      <div style={{ marginTop: 26, display: "flex", flexDirection: "column", gap: 14 }}>
-        {[["🔍", "What we collect", "When you scan a URL, we store that URL and its score so the leaderboard and “sites checked” counter work. We keep basic, anonymous analytics. We don't sell your data, and we don't run creepy ad trackers."],
-          ["🌎", "Public URLs only", "Slopdar only looks at publicly available pages, the same HTML your browser sees. We don't log in, bypass paywalls, or touch anything behind authentication. Please don't paste private or internal links."],
-          ["🙃", "It's a toy, not a verdict", "The Slop Score is automated, opinionated, and meant for fun. We detect signals, not proof. A high score means a site looks templated, not that no human ever touched it."],
-          ["🧹", "Get yourself removed", "Own a site on the leaderboard and want off? Email hi@slopdar.com and we'll pull it. By scanning a site you confirm you're cool with its public score appearing here."]].map(([e, t, d]) => (
-          <div key={t} style={{ ...card, borderRadius: 16, padding: "22px 24px", boxShadow: "0 5px 0 rgba(0,0,0,.1)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ fontSize: 22 }}>{e}</span><h2 style={{ fontWeight: 900, fontSize: 19, letterSpacing: "-.01em", margin: 0 }}>{t}</h2></div>
-            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--ink2)", margin: "11px 0 0" }}>{d}</p>
-          </div>
-        ))}
-      </div>
-      <div style={{ marginTop: 24 }}>
-        <button className="h-brand" onClick={reset} style={{ ...btnBrand, fontSize: 15, padding: "14px 26px", borderRadius: 12 }}>← Back to scanning</button>
-      </div>
-    </section>
-  );
-
   // particles for the result reveal
   const particles = useMemo(() => Array.from({ length: 20 }, (_, i) => ({
     left: `${4 + (i * 4.8) % 92}%`, delay: `${(i % 10) * 0.06}s`, dur: `${1.5 + (i % 5) * 0.22}s`, size: `${18 + (i % 4) * 8}px`,
@@ -511,7 +510,6 @@ export default function SlopdarApp() {
         {screen === "scanning" && renderScanning()}
         {screen === "result" && renderResult()}
         {screen === "unreachable" && renderUnreachable()}
-        {screen === "legal" && renderLegal()}
       </main>
       {Footer}
 
@@ -529,10 +527,13 @@ export default function SlopdarApp() {
       {shareOpen && result && (
         <div onClick={() => setShareOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(25,21,18,.55)", backdropFilter: "blur(4px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "#fff", opacity: .85, marginBottom: 14 }}>Share card · 1200 × 630</div>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "min(92vw,720px)", aspectRatio: "1200/630", background: tier.tint, border: "3px solid var(--ink)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,.4)", position: "relative", overflow: "hidden", display: "flex", containerType: "inline-size" }}>
+          <div ref={shareCardRef} onClick={(e) => e.stopPropagation()} style={{ width: "min(92vw,720px)", aspectRatio: "1200/630", background: tier.tint, border: "3px solid var(--ink)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,.4)", position: "relative", overflow: "hidden", display: "flex", containerType: "inline-size" }}>
             <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "5% 6%" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "1.2%" }}><span style={{ width: "1.6%", aspectRatio: "1", borderRadius: "50%", background: "var(--brand)", display: "inline-block" }} /><span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: "3.4cqw", color: "var(--ink)" }}>Slopdar</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: "1.8%" }}>
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "5cqw", height: "5cqw", borderRadius: "1.3cqw", background: "var(--brand)" }}><span style={{ color: "#fff", fontWeight: 900, fontSize: "3.2cqw" }}>S</span></span>
+                  <span style={{ fontWeight: 900, letterSpacing: "-.02em", fontSize: "3.6cqw" }}><span style={{ color: "var(--ink)" }}>Slop</span><span style={{ color: "var(--brand)" }}>dar</span></span>
+                </div>
                 <span style={{ fontFamily: MONO, fontSize: "2cqw", color: "var(--ink2)", wordBreak: "break-all" }}>{domain}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "5%" }}>
@@ -551,8 +552,9 @@ export default function SlopdarApp() {
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-            <button onClick={(e) => e.stopPropagation()} style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Copy image</button>
+          <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap", justifyContent: "center" }}>
+            <button onClick={(e) => { e.stopPropagation(); copyShareImage(); }} style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>{shareCopied ? "Copied ✓" : "Copy image"}</button>
+            <button onClick={(e) => { e.stopPropagation(); downloadShareImage(); }} style={{ background: "#fff", color: "var(--ink)", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Download</button>
             <button onClick={() => setShareOpen(false)} style={{ background: "transparent", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.25)", borderRadius: 10, fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Close</button>
           </div>
         </div>

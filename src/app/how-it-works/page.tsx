@@ -6,6 +6,7 @@ import Link from "next/link";
 import { env } from "@/lib/env";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import Faq from "@/components/Faq";
 
 export const metadata: Metadata = {
@@ -101,13 +102,7 @@ export default function HowItWorksPage() {
         </div>
       </main>
 
-      <footer style={{ borderTop: "2px solid var(--ink)", padding: "22px 28px", display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
-        <span>Slopdar runs on the slop stack. We know.</span>
-        <span style={{ display: "flex", gap: 18 }}>
-          <Link href="/about" style={{ color: "inherit" }}>About</Link>
-          <Link href="/leaderboard" style={{ color: "inherit" }}>Leaderboard →</Link>
-        </span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
