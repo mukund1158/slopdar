@@ -55,6 +55,11 @@ a { color: inherit; }
 .h-lift { transition: transform .12s ease, box-shadow .12s ease; }
 .h-lift:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.12); }
 
+/* Share-modal action buttons */
+.share-btn { transition: transform .1s ease, box-shadow .1s ease; }
+.share-btn:hover { transform: translateY(-1px); }
+.share-btn:active { transform: translateY(2px); }
+
 /* ── Header / nav responsiveness ─────────────────────────────────────────── */
 .site-nav { display: flex; align-items: center; gap: 22px; }
 .nav-burger { display: none; background: none; border: 0; padding: 4px; cursor: pointer; font-size: 22px; line-height: 1; color: var(--ink); }

@@ -515,6 +515,9 @@ export default function SlopdarApp() {
     left: `${4 + (i * 4.8) % 92}%`, delay: `${(i % 10) * 0.06}s`, dur: `${1.5 + (i % 5) * 0.22}s`, size: `${18 + (i % 4) * 8}px`,
   })), []);
 
+  // Share-modal button styles (cohesive brutalist pills + a quiet ghost).
+  const pillBtn: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "var(--ink)", border: "2px solid var(--ink)", borderRadius: 11, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: "11px 16px", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,.28)" };
+
   return (
     <div style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)", fontFamily: SANS, color: "var(--ink)" }}>
       {Header}
@@ -565,18 +568,29 @@ export default function SlopdarApp() {
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={(e) => { e.stopPropagation(); shareToX(); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#000", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 18px", cursor: "pointer" }}>
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-              Post on X
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); shareToLinkedIn(); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#0A66C2", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 18px", cursor: "pointer" }}>
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" /></svg>
-              LinkedIn
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); copyShareImage(); }} style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>{shareCopied ? "Copied ✓" : "Copy image"}</button>
-            <button onClick={(e) => { e.stopPropagation(); downloadShareImage(); }} style={{ background: "#fff", color: "var(--ink)", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Download</button>
-            <button onClick={() => setShareOpen(false)} style={{ background: "transparent", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.25)", borderRadius: 10, fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Close</button>
+          <div style={{ display: "flex", gap: 24, marginTop: 22, flexWrap: "wrap", justifyContent: "center", alignItems: "center" }}>
+            {/* Share */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+              <button className="share-btn" onClick={(e) => { e.stopPropagation(); shareToX(); }} style={pillBtn}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                Post on X
+              </button>
+              <button className="share-btn" onClick={(e) => { e.stopPropagation(); shareToLinkedIn(); }} style={pillBtn}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#0A66C2" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" /></svg>
+                LinkedIn
+              </button>
+            </div>
+            {/* Save */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+              <button className="share-btn" onClick={(e) => { e.stopPropagation(); copyShareImage(); }} style={pillBtn}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                {shareCopied ? "Copied ✓" : "Copy"}
+              </button>
+              <button className="share-btn" onClick={(e) => { e.stopPropagation(); downloadShareImage(); }} style={pillBtn}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="m7 11 5 5 5-5" /><path d="M5 21h14" /></svg>
+                Download
+              </button>
+            </div>
           </div>
         </div>
       )}
