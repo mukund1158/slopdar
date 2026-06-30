@@ -92,7 +92,7 @@ export default function AboutPage() {
 
         <div style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link href="/" className="h-brand" style={{ background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 12, fontWeight: 900, fontSize: 15, padding: "14px 26px", textDecoration: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>Roast a site →</Link>
-          <a href="mailto:hi@slopdar.com" className="h-ink" style={{ display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--ink)", border: "2px solid var(--ink)", borderRadius: 12, fontWeight: 800, fontSize: 15, padding: "14px 24px", textDecoration: "none", boxShadow: "0 5px 0 rgba(0,0,0,.1)" }}>Say hi ✉</a>
+          <a href="mailto:support@slopdar.com" className="h-ink" style={{ display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--ink)", border: "2px solid var(--ink)", borderRadius: 12, fontWeight: 800, fontSize: 15, padding: "14px 24px", textDecoration: "none", boxShadow: "0 5px 0 rgba(0,0,0,.1)" }}>Say hi ✉</a>
           <a href="https://x.com/mukparekh" target="_blank" rel="noopener" className="h-ink" style={{ display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--ink)", border: "2px solid var(--ink)", borderRadius: 12, fontWeight: 800, fontSize: 15, padding: "14px 24px", textDecoration: "none", boxShadow: "0 5px 0 rgba(0,0,0,.1)" }}>Follow @mukparekh</a>
         </div>
       </main>
