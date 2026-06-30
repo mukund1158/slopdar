@@ -5,10 +5,10 @@
 //
 // Satori rule: every <div> with more than one child MUST set display:flex.
 import { ImageResponse } from "next/og";
-import { readFile } from "node:fs/promises";
 import { db } from "@/lib/db";
 import { tierOf } from "@/lib/tiers";
 import { roastSetFor } from "@/lib/roasts";
+import { archivo900, archivoItalic, plex400, plex600 } from "./og-fonts";
 
 export const runtime = "nodejs";
 export const alt = "Slopdar Slop Score";
@@ -24,15 +24,9 @@ const MONO = "IBM Plex Mono";
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  const [check, archivo900, archivoItalic, plex400, plex600] = await Promise.all([
-    db.check
-      .findUnique({ where: { slug }, select: { host: true, score: true, signals: { where: { weight: { gt: 0 } }, select: { id: true } } } })
-      .catch(() => null),
-    readFile(new URL("./fonts/archivo-900.woff", import.meta.url)),
-    readFile(new URL("./fonts/archivo-700-italic.woff", import.meta.url)),
-    readFile(new URL("./fonts/plexmono-400.woff", import.meta.url)),
-    readFile(new URL("./fonts/plexmono-600.woff", import.meta.url)),
-  ]);
+  const check = await db.check
+    .findUnique({ where: { slug }, select: { host: true, score: true, signals: { where: { weight: { gt: 0 } }, select: { id: true } } } })
+    .catch(() => null);
 
   const host = check?.host ?? slug;
   const score = check?.score ?? 0;
@@ -100,10 +94,10 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       ...size,
       headers: { "cache-control": "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400" },
       fonts: [
-        { name: "Archivo", data: archivo900, weight: 900, style: "normal" },
-        { name: "Archivo", data: archivoItalic, weight: 700, style: "italic" },
-        { name: MONO, data: plex400, weight: 400, style: "normal" },
-        { name: MONO, data: plex600, weight: 600, style: "normal" },
+        { name: "Archivo", data: Buffer.from(archivo900, "base64"), weight: 900, style: "normal" },
+        { name: "Archivo", data: Buffer.from(archivoItalic, "base64"), weight: 700, style: "italic" },
+        { name: MONO, data: Buffer.from(plex400, "base64"), weight: 400, style: "normal" },
+        { name: MONO, data: Buffer.from(plex600, "base64"), weight: 600, style: "normal" },
       ],
     },
   );
