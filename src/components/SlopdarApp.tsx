@@ -201,6 +201,19 @@ export default function SlopdarApp() {
     }
   }, [exportCard, result]);
 
+  // Social share: post the result-page URL so X/LinkedIn render its OG card.
+  const resultShareUrl = useCallback(() => (result ? `${window.location.origin}/r/${result.slug}` : ""), [result]);
+  const shareToX = useCallback(() => {
+    if (!result) return;
+    const t = tierOf(result.score);
+    const text = `${result.host} scored ${result.score}/100 on Slopdar (${t.label}). Is it built or is it slop?`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(resultShareUrl())}`, "_blank", "noopener");
+  }, [result, resultShareUrl]);
+  const shareToLinkedIn = useCallback(() => {
+    if (!result) return;
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(resultShareUrl())}`, "_blank", "noopener");
+  }, [result, resultShareUrl]);
+
   // ── derived (result) ─────────────────────────────────────────────────────
   const tier = useMemo(() => tierOf(result?.score ?? 0), [result]);
   const rset = useMemo(() => roastSetFor(tier.label), [tier.label]);
@@ -553,6 +566,14 @@ export default function SlopdarApp() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap", justifyContent: "center" }}>
+            <button onClick={(e) => { e.stopPropagation(); shareToX(); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#000", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 18px", cursor: "pointer" }}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              Post on X
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); shareToLinkedIn(); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#0A66C2", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 18px", cursor: "pointer" }}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" /></svg>
+              LinkedIn
+            </button>
             <button onClick={(e) => { e.stopPropagation(); copyShareImage(); }} style={{ background: "var(--brand)", color: "#fff", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>{shareCopied ? "Copied ✓" : "Copy image"}</button>
             <button onClick={(e) => { e.stopPropagation(); downloadShareImage(); }} style={{ background: "#fff", color: "var(--ink)", border: "none", borderRadius: 10, fontFamily: SANS, fontWeight: 800, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Download</button>
             <button onClick={() => setShareOpen(false)} style={{ background: "transparent", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.25)", borderRadius: 10, fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "12px 20px", cursor: "pointer" }}>Close</button>
