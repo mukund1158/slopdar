@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { archivo, plexMono } from "@/lib/fonts";
 import { env } from "@/lib/env";
 import "@/styles/globals.css";
+
+const GA_ID = "G-3CS2J4ZTD7";
 
 const title = "Slopdar: Is it built or is it slop?";
 const description =
@@ -31,7 +34,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${archivo.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Google Analytics (GA4) */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`}
+        </Script>
+      </body>
     </html>
   );
 }
