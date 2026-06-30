@@ -81,11 +81,13 @@ export default function SlopdarApp() {
   const [embedScore, setEmbedScore] = useState<number | null>(null);
 
   const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number } | null>(null);
+  const [liveCount, setLiveCount] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const quipRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const rafRef = useRef<number | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refreshLeaderboard = useCallback(async () => {
     try {
@@ -94,14 +96,25 @@ export default function SlopdarApp() {
     } catch { /* best-effort */ }
   }, []);
 
+  // Live "sites roasted" counter — polled so it ticks up without a refresh.
+  const refreshCount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/stats", { cache: "no-store" });
+      if (res.ok) setLiveCount((await res.json()).total);
+    } catch { /* best-effort */ }
+  }, []);
+
   useEffect(() => {
     refreshLeaderboard();
+    refreshCount();
+    pollRef.current = setInterval(refreshCount, 5000);
     return () => {
       if (quipRef.current) clearInterval(quipRef.current);
       if (progRef.current) clearInterval(progRef.current);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [refreshLeaderboard]);
+  }, [refreshLeaderboard, refreshCount]);
 
   const cleanupScan = useCallback(() => {
     if (quipRef.current) clearInterval(quipRef.current);
@@ -145,10 +158,11 @@ export default function SlopdarApp() {
       setResult(data); setDomain(data.host || disp);
       setScreen("result"); animateScore(data.score);
       refreshLeaderboard();
+      refreshCount();
     } catch {
       cleanupScan(); setScreen("unreachable");
     }
-  }, [animateScore, cleanupScan, refreshLeaderboard]);
+  }, [animateScore, cleanupScan, refreshLeaderboard, refreshCount]);
 
   const reset = useCallback(() => {
     cleanupScan();
@@ -224,7 +238,7 @@ export default function SlopdarApp() {
   const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight).filter((w) => w > 0));
   const isSlop = screen === "result" && (result?.score ?? 0) > 75;
 
-  const counterFmt = board ? board.total.toLocaleString("en-US") : "…";
+  const counterFmt = (liveCount ?? board?.total ?? null) != null ? (liveCount ?? board!.total).toLocaleString("en-US") : "…";
 
   // ───────────────────────────── render helpers ───────────────────────────
   const Header = <SiteHeader onLogoClick={reset} />;
