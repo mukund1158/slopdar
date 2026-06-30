@@ -101,6 +101,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         </div>
       </div>
     ),
-    { ...size },
+    { ...size, headers: { "cache-control": "public, max-age=600, s-maxage=86400, stale-while-revalidate=86400" } },
   );
 }

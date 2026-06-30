@@ -206,7 +206,9 @@ export default function SlopdarApp() {
   const shareToX = useCallback(() => {
     if (!result) return;
     const t = tierOf(result.score);
-    const text = `${result.host} scored ${result.score}/100 on Slopdar (${t.label}). Is it built or is it slop?`;
+    // Don't put the scanned domain in the text — it looks like a URL and X would
+    // link it (two URLs → X picks the wrong card). The result link carries the card.
+    const text = `Scored ${result.score}/100 on Slopdar (${t.label}). Is it built or is it slop?`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(resultShareUrl())}`, "_blank", "noopener");
   }, [result, resultShareUrl]);
   const shareToLinkedIn = useCallback(() => {
