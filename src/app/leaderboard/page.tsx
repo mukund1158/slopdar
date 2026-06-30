@@ -31,8 +31,8 @@ export default async function LeaderboardPage() {
   let fame: Row[] = [];
   try {
     [shame, fame] = await Promise.all([
-      db.check.findMany({ orderBy: { score: "desc" }, take: 100, select: { host: true, slug: true, score: true } }),
-      db.check.findMany({ orderBy: { score: "asc" }, take: 100, select: { host: true, slug: true, score: true } }),
+      db.check.findMany({ orderBy: [{ score: "desc" }, { updatedAt: "desc" }], take: 100, select: { host: true, slug: true, score: true } }),
+      db.check.findMany({ orderBy: [{ score: "asc" }, { updatedAt: "desc" }], take: 100, select: { host: true, slug: true, score: true } }),
     ]);
   } catch {
     /* DB unavailable — render empty board */
