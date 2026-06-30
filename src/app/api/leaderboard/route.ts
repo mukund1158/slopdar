@@ -13,8 +13,8 @@ const toRows = (rows: Row[]) => rows.map((r) => ({ domain: r.host, slug: r.slug,
 export async function GET() {
   try {
     const [shame, fame, total] = await Promise.all([
-      db.check.findMany({ orderBy: { score: "desc" }, take: 100, select: { host: true, slug: true, score: true } }),
-      db.check.findMany({ orderBy: { score: "asc" }, take: 100, select: { host: true, slug: true, score: true } }),
+      db.check.findMany({ orderBy: [{ score: "desc" }, { updatedAt: "desc" }], take: 100, select: { host: true, slug: true, score: true } }),
+      db.check.findMany({ orderBy: [{ score: "asc" }, { updatedAt: "desc" }], take: 100, select: { host: true, slug: true, score: true } }),
       db.check.count(),
     ]);
     return NextResponse.json({ shame: toRows(shame), fame: toRows(fame), total });
