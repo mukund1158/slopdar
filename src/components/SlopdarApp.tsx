@@ -171,6 +171,12 @@ export default function SlopdarApp() {
   }, [cleanupScan]);
 
   const onKey = (e: React.KeyboardEvent) => { if (e.key === "Enter") doCheck(inputRef.current?.value ?? ""); };
+  // Pasted URLs usually carry the scheme — drop it so the box shows a bare domain.
+  const onInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const el = e.currentTarget;
+    const cleaned = el.value.replace(/^\s*https?:\/\//i, "");
+    if (cleaned !== el.value) el.value = cleaned;
+  };
   const embedCodeFor = (dom: string) =>
     `<a href="https://slopdar.com/r/${dom}">\n  <img src="https://slopdar.com/badge/${dom}.svg" alt="Slopdar score" height="28">\n</a>`;
   const copyEmbed = () => {
@@ -292,7 +298,7 @@ export default function SlopdarApp() {
           <div style={{ maxWidth: 560, margin: "34px auto 0" }}>
             <div style={{ display: "flex", alignItems: "stretch", background: "var(--card)", border: "2.5px solid var(--ink)", borderRadius: 14, overflow: "hidden", boxShadow: "0 8px 0 rgba(0,0,0,.12)" }}>
               <span style={{ display: "flex", alignItems: "center", paddingLeft: 16, color: "var(--mut)", fontFamily: MONO, fontSize: 14, userSelect: "none" }}>https://</span>
-              <input ref={inputRef} onKeyDown={onKey} placeholder="any-website.com" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", color: "var(--ink)", fontFamily: MONO, fontSize: 15, padding: "17px 10px", outline: "none" }} />
+              <input ref={inputRef} onKeyDown={onKey} onInput={onInput} placeholder="any-website.com" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", color: "var(--ink)", fontFamily: MONO, fontSize: 15, padding: "17px 10px", outline: "none" }} />
             </div>
             <button className="h-brand" onClick={() => doCheck(inputRef.current?.value ?? "")} style={{ marginTop: 16, background: "var(--brand)", color: "#fff", border: "none", borderRadius: 13, fontFamily: SANS, fontWeight: 900, fontSize: 19, letterSpacing: "-.01em", padding: "17px 38px", cursor: "pointer", animation: "glowpulse 2.6s ease-in-out infinite" }}>Roast it 🔥</button>
             <div style={{ marginTop: 16, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}><span style={{ color: "var(--ink2)", fontWeight: 600 }}>{counterFmt}</span> sites roasted · we&apos;re not judging (we are)</div>
