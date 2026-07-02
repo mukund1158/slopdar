@@ -4,7 +4,9 @@ import { assertScannableUrl } from "./ssrf";
 /**
  * Normalise user input into a canonical scannable URL.
  * - prepends https:// when the scheme is missing
- * - lowercases the host, strips the fragment and a trailing slash
+ * - lowercases the host
+ * - collapses the URL to the site root: path, query and fragment are dropped,
+ *   so "linear.app/contact" and "linear.app" are the same check
  * - runs the SSRF allow-check (throws SsrfError if not public http(s))
  */
 export function normalizeUrl(input: string): URL {
@@ -13,28 +15,18 @@ export function normalizeUrl(input: string): URL {
 
   const url = assertScannableUrl(withScheme);
   url.hostname = url.hostname.toLowerCase();
+  url.pathname = "";
+  url.search = "";
   url.hash = "";
-  if (url.pathname === "/") url.pathname = "";
 
   return url;
 }
 
 /**
- * Build a stable, human-friendly slug for /r/[slug].
- * Root URLs collapse to the bare host (e.g. "stripe.com"); deeper paths get a
- * compact suffix so distinct pages don't collide on the same host.
+ * Build a stable, human-friendly slug for /r/[slug]. URLs are always
+ * root-level (see normalizeUrl), so the slug is just the bare host; the
+ * caller disambiguates http/https/www variants that collide on it.
  */
 export function slugForUrl(url: URL): string {
-  const host = url.hostname.replace(/^www\./, "");
-  const path = url.pathname.replace(/\/+$/, "");
-  if (!path || path === "") return host;
-
-  const pathSlug = path
-    .replace(/^\//, "")
-    .replace(/[^a-z0-9]+/gi, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase()
-    .slice(0, 60);
-
-  return pathSlug ? `${host}-${pathSlug}` : host;
+  return url.hostname.replace(/^www\./, "");
 }
