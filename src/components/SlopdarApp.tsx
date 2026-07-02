@@ -581,7 +581,7 @@ export default function SlopdarApp() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "inline-block", background: tier.color, color: "#fff", fontWeight: 900, fontSize: "3cqw", letterSpacing: ".02em", textTransform: "uppercase", border: "2px solid var(--ink)", borderRadius: 8, padding: "1% 2.6%" }}>{tier.label}</div>
-                  <p style={{ margin: "4% 0 0", fontWeight: 700, fontStyle: "italic", fontSize: "3.8cqw", lineHeight: 1.24, color: "var(--ink)" }}>&ldquo;{rset.roasts[0]}&rdquo;</p>
+                  <p style={{ margin: "4% 0 0", fontWeight: 700, fontStyle: "italic", fontSize: "3.8cqw", lineHeight: 1.24, color: "var(--ink)" }}>&ldquo;{roast}&rdquo;</p>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: MONO, fontSize: "2cqw", color: "var(--ink2)", borderTop: "2px solid var(--ink)", paddingTop: "3%" }}>
