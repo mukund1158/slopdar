@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { env } from "@/lib/env";
 import { normalizeUrl, slugForUrl } from "@/lib/url";
+import { submitToIndexNow } from "@/lib/indexnow";
 import { runScan } from "@/scanner";
 import { TIER_EMOJI } from "@/scanner/score";
 import { captureScreenshot } from "./screenshot";
@@ -144,6 +145,10 @@ export async function runCheck(rawUrl: string, opts: { force?: boolean } = {}): 
       urlHash,
     );
   }
+
+  // Tell Bing/Yandex the result page is new (or its content just changed).
+  // Fire-and-forget — never blocks or fails the check.
+  submitToIndexNow([`/r/${saved.slug}`]);
 
   const response: CheckResponse = {
     slug: saved.slug,
