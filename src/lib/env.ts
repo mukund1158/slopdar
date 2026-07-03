@@ -25,6 +25,15 @@ const schema = z.object({
   SCREENSHOT_WIDTH: z.coerce.number().int().positive().default(1280),
   SCREENSHOT_HEIGHT: z.coerce.number().int().positive().default(800),
 
+  // IndexNow key for instant Bing/Yandex indexing pings. Optional — when
+  // unset, key-file route 404s and pings are silently skipped (e.g. local dev).
+  INDEXNOW_KEY: z
+    .string()
+    .min(8)
+    .max(128)
+    .regex(/^[A-Za-z0-9-]+$/, "IndexNow key must be 8-128 chars of a-z, A-Z, 0-9 or dashes")
+    .optional(),
+
   // "1" allows scanning private/loopback hosts. LOCAL DEV ONLY.
   ALLOW_PRIVATE_HOSTS: z
     .enum(["0", "1"])
