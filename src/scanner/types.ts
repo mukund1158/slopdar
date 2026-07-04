@@ -24,6 +24,12 @@ export interface ScanContext {
 /** Result of a rule that matched. `evidence` is the snippet shown on the card. */
 export interface SignalHit {
   evidence?: string;
+  /**
+   * True when the match rests on a name-string alone (not a hosting domain or
+   * injected attribute). Multiple weak fingerprint hits on one page mean the
+   * page is *about* those builders, so scoring discards them (score.ts).
+   */
+  weak?: boolean;
 }
 
 export interface SignalRule {
@@ -43,6 +49,7 @@ export interface MatchedSignal {
   description: string;
   weight: number;
   evidence?: string;
+  weak?: boolean;
 }
 
 export interface DetectedTech {

@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "scan": "node --env-file=.env --import tsx scripts/scan.ts",
     "dedupe": "node --env-file=.env --import tsx scripts/dedupe-checks.ts",
     "prisma:generate": "prisma generate",

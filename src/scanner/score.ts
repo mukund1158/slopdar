@@ -21,6 +21,19 @@ export function tierFor(score: number): Tier {
   return TIERS.find((t) => score <= t.max)?.tier ?? "Pure Slop";
 }
 
+/**
+ * Drop conflicting builder fingerprints. A real site is built by at most one
+ * builder, so when 2+ fingerprint rules matched on name-strings alone
+ * (`weak`), the page is almost certainly *about* those tools (a comparison
+ * article, a review) — discard the weak hits. Strong hits (hosting domain,
+ * injected attributes, generator meta) always survive.
+ */
+export function dropConflictingFingerprints(signals: MatchedSignal[]): MatchedSignal[] {
+  const weakFingerprints = signals.filter((s) => s.category === "fingerprint" && s.weak);
+  if (weakFingerprints.length < 2) return signals;
+  return signals.filter((s) => !(s.category === "fingerprint" && s.weak));
+}
+
 export function scoreSignals(signals: MatchedSignal[]): ScoreOutput {
   const raw = signals.reduce((sum, s) => sum + s.weight, 0);
   const score = Math.max(0, Math.min(100, Math.round(raw)));
