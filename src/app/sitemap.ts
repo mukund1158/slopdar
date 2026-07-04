@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
     { url: `${base}/leaderboard`, changeFrequency: "hourly", priority: 0.8 },
     { url: `${base}/how-it-works`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/guide/how-to-tell-if-a-website-is-ai-generated`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/about`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.3 },
   ];

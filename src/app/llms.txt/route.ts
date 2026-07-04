@@ -54,6 +54,7 @@ Slopdar detects signals, not proof. A high score means a site looks templated, n
 
 - ${base}/ : scan a website
 - ${base}/leaderboard : the sloppiest and most hand-crafted sites
+- ${base}/guide/how-to-tell-if-a-website-is-ai-generated : guide to the 10 signs a site is AI-generated or vibe-coded, with manual checks
 - ${base}/about : how it works and FAQ
 - ${base}/r/<domain> : the result page for a scanned site (example: ${base}/r/example.com)
 - ${base}/sitemap.xml : all scanned-site pages
