@@ -7,6 +7,7 @@
 //   npm run dedupe -- --apply # actually merge + delete duplicates
 import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
+import { stripWww } from "@/lib/url";
 
 const apply = process.argv.includes("--apply");
 
@@ -15,7 +16,7 @@ const sha256 = (v: string) => createHash("sha256").update(v).digest("hex");
 /** Collapse a stored URL to its site root — mirrors lib/url normalizeUrl. */
 function rootCanonical(raw: string): string {
   const url = new URL(raw);
-  url.hostname = url.hostname.toLowerCase();
+  url.hostname = stripWww(url.hostname.toLowerCase());
   url.pathname = "";
   url.search = "";
   url.hash = "";
