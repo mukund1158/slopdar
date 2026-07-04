@@ -34,8 +34,18 @@ export function dropConflictingFingerprints(signals: MatchedSignal[]): MatchedSi
   return signals.filter((s) => !(s.category === "fingerprint" && s.weak));
 }
 
+/**
+ * Human signals soften the score but can never erase it: their combined
+ * discount is capped at this fraction of the AI-evidence points. Without the
+ * cap, near-universal human signs (favicon, OG tags, fonts) zeroed out most
+ * low-scoring sites, and every result read as "Hand-Crafted".
+ */
+const MAX_HUMAN_DISCOUNT_RATIO = 0.5;
+
 export function scoreSignals(signals: MatchedSignal[]): ScoreOutput {
-  const raw = signals.reduce((sum, s) => sum + s.weight, 0);
+  const positives = signals.reduce((sum, s) => sum + Math.max(0, s.weight), 0);
+  const humanDiscount = -signals.reduce((sum, s) => sum + Math.min(0, s.weight), 0);
+  const raw = positives - Math.min(humanDiscount, positives * MAX_HUMAN_DISCOUNT_RATIO);
   const score = Math.max(0, Math.min(100, Math.round(raw)));
   return { score, tier: tierFor(score) };
 }
