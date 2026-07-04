@@ -10,7 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "About Slopdar — who's behind the radar",
   description:
-    "Slopdar is a fun radar for AI-generated and vibe-coded websites, built solo by indie hacker Mukund. Paste a link, get a Slop Score, see the receipts. Signals, not proof.",
+    "Slopdar is a fun radar for AI-generated and vibe-coded websites, built solo by indie hacker Mukund. Paste a link, get a Slop Score, see the receipts.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: "About Slopdar",

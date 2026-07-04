@@ -13,7 +13,7 @@ import Faq from "@/components/Faq";
 export const metadata: Metadata = {
   title: "How to tell if a website is AI-generated: 10 signs to check",
   description:
-    "A practical guide to spotting AI-generated and vibe-coded websites: builder fingerprints, default component stacks, AI writing patterns, leftover placeholders, template layouts, and how to check each one yourself.",
+    "How to spot AI-generated and vibe-coded websites: 10 tells, from builder fingerprints to template layouts, and how to check each one yourself.",
   alternates: { canonical: "/guide/how-to-tell-if-a-website-is-ai-generated" },
   openGraph: {
     title: "How to tell if a website is AI-generated",

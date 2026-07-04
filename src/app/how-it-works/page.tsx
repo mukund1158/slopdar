@@ -12,7 +12,7 @@ import Faq from "@/components/Faq";
 export const metadata: Metadata = {
   title: "How Slopdar works — the Slop Score explained",
   description:
-    "How Slopdar scores any website 0–100 for how AI-generated or vibe-coded it looks: the three steps, what each tier means, the tells we check, and why it's signals, not proof.",
+    "How Slopdar scores any website 0–100 for AI and vibe-coding tells: the three steps, what each tier means, and why it's signals, not proof.",
   alternates: { canonical: "/how-it-works" },
   openGraph: {
     title: "How Slopdar works",
