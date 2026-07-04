@@ -14,6 +14,33 @@ export function rawHtml(ctx: ScanContext): string {
   return ctx.html.toLowerCase();
 }
 
+/**
+ * Lowercased "technical surface" of the page: script/link URLs, meta tags and
+ * HTML comments — the places a site builder leaves artifacts. Deliberately
+ * excludes visible text, <a href> links and inline script bodies (SSR
+ * frameworks embed the article text there as JSON), so a page that merely
+ * *talks about* a builder doesn't match rules meant to detect being *built
+ * with* one.
+ */
+export function techSurface(ctx: ScanContext): string {
+  const $ = ctx.$;
+  const parts: string[] = [];
+  $("script[src]").each((_, el) => {
+    parts.push($(el).attr("src") ?? "");
+  });
+  $("link[href]").each((_, el) => {
+    parts.push($(el).attr("href") ?? "");
+  });
+  // Meta tag names are technical; meta *content* is only safe for the
+  // generator tag — description/og:* content is article prose.
+  $("meta").each((_, el) => {
+    parts.push($(el).attr("name") ?? "", $(el).attr("property") ?? "");
+  });
+  parts.push($('meta[name="generator"]').attr("content") ?? "");
+  for (const m of ctx.html.matchAll(/<!--[\s\S]*?-->/g)) parts.push(m[0]);
+  return parts.join("\n").toLowerCase();
+}
+
 /** The <meta name="generator"> content, lowercased, or "". */
 export function metaGenerator(ctx: ScanContext): string {
   return (ctx.$('meta[name="generator"]').attr("content") ?? "").toLowerCase();

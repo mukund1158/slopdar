@@ -8,7 +8,7 @@ import * as cheerio from "cheerio";
 import { fetchPage, ScanFetchError } from "./fetch";
 import { ALL_SIGNALS } from "./signals";
 import { detectTech } from "./techstack";
-import { scoreSignals } from "./score";
+import { dropConflictingFingerprints, scoreSignals } from "./score";
 import type { MatchedSignal, ScanContext, ScanResult } from "./types";
 
 export { ScanFetchError } from "./fetch";
@@ -26,7 +26,7 @@ export async function runScan(url: URL): Promise<ScanResult> {
     headers: page.headers,
   };
 
-  const signals: MatchedSignal[] = [];
+  const rawSignals: MatchedSignal[] = [];
   for (const rule of ALL_SIGNALS) {
     let hit;
     try {
@@ -37,16 +37,21 @@ export async function runScan(url: URL): Promise<ScanResult> {
       continue;
     }
     if (hit) {
-      signals.push({
+      rawSignals.push({
         id: rule.id,
         category: rule.category,
         label: rule.label,
         description: rule.description,
         weight: rule.weight,
         evidence: hit.evidence,
+        weak: hit.weak,
       });
     }
   }
+
+  // Pages *about* several builders trip multiple name-string fingerprints;
+  // filter those before scoring so the card and score agree.
+  const signals = dropConflictingFingerprints(rawSignals);
 
   const tech = detectTech(ctx);
   const { score, tier } = scoreSignals(signals);

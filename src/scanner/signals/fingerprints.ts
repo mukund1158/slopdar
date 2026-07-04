@@ -1,7 +1,13 @@
 // 🏷️ Tool fingerprints — highest-confidence tells that a specific AI/no-code
 // builder produced the page.
+// Matching runs against techSurface() — script/link URLs, meta tags, HTML
+// comments — never the full page HTML, so an article that merely *mentions* a
+// builder (e.g. a "Lovable vs Bolt vs Base44" comparison) doesn't get flagged
+// as *built with* all of them. Name-string hits are marked `weak`; score.ts
+// discards weak fingerprints when several match at once, since no real site
+// is built by multiple competing builders.
 import type { SignalRule } from "../types";
-import { metaGenerator, rawHtml, snippet } from "./util";
+import { metaGenerator, rawHtml, snippet, techSurface } from "./util";
 
 export const fingerprintSignals: SignalRule[] = [
   {
@@ -11,9 +17,11 @@ export const fingerprintSignals: SignalRule[] = [
     label: "Built with v0.dev",
     description: "References to Vercel's v0 generator were found in the page source.",
     test: (ctx) => {
-      const html = rawHtml(ctx);
-      if (html.includes("v0.dev") || metaGenerator(ctx).includes("v0")) {
-        return { evidence: "v0.dev reference in source" };
+      if (metaGenerator(ctx).includes("v0")) {
+        return { evidence: "v0 generator meta tag" };
+      }
+      if (techSurface(ctx).includes("v0.dev")) {
+        return { evidence: "v0.dev script/meta artifact", weak: true };
       }
       return null;
     },
@@ -25,15 +33,15 @@ export const fingerprintSignals: SignalRule[] = [
     label: "Built with Lovable",
     description: "Lovable / GPT-Engineer build artifacts were detected.",
     test: (ctx) => {
-      const html = rawHtml(ctx);
-      if (
-        html.includes("lovable.dev") ||
-        html.includes("gptengineer") ||
-        html.includes("lovable.app") ||
-        html.includes("data-lov-id") ||
-        ctx.url.hostname.endsWith("lovable.app")
-      ) {
-        return { evidence: html.includes("data-lov-id") ? "data-lov-id attribute" : "lovable reference in source" };
+      if (ctx.$("[data-lov-id]").length > 0) {
+        return { evidence: "data-lov-id attribute" };
+      }
+      if (ctx.url.hostname.endsWith("lovable.app")) {
+        return { evidence: "hosted on lovable.app" };
+      }
+      const tech = techSurface(ctx);
+      if (tech.includes("gptengineer") || tech.includes("lovable.dev") || tech.includes("lovable.app")) {
+        return { evidence: "Lovable script/meta artifact", weak: true };
       }
       return null;
     },
@@ -44,7 +52,10 @@ export const fingerprintSignals: SignalRule[] = [
     weight: 35,
     label: "Built with Bolt",
     description: "StackBlitz Bolt.new build artifacts were detected.",
-    test: (ctx) => (rawHtml(ctx).includes("bolt.new") ? { evidence: "bolt.new reference in source" } : null),
+    test: (ctx) =>
+      techSurface(ctx).includes("bolt.new")
+        ? { evidence: "bolt.new script/meta artifact", weak: true }
+        : null,
   },
   {
     id: "fingerprint.framer",
@@ -95,7 +106,8 @@ export const fingerprintSignals: SignalRule[] = [
     description: "A leftover builder attribution badge was found in the page.",
     test: (ctx) => {
       const m = ctx.html.match(/made with (?:love by )?(v0|lovable|bolt|framer|webflow|wix|builder)/i);
-      return m ? { evidence: snippet(m[0]) } : null;
+      // weak: prose like "sites made with Lovable…" also matches this.
+      return m ? { evidence: snippet(m[0]), weak: true } : null;
     },
   },
 
@@ -107,9 +119,13 @@ export const fingerprintSignals: SignalRule[] = [
     label: "Built with Base44",
     description: "Base44 (an AI app builder) artifacts were detected.",
     test: (ctx) => {
-      const html = rawHtml(ctx);
-      if (ctx.url.hostname.endsWith("base44.app") || html.includes("base44")) {
-        return { evidence: "base44 reference" };
+      if (ctx.url.hostname.endsWith("base44.app")) {
+        return { evidence: "hosted on base44.app" };
+      }
+      const tech = techSurface(ctx);
+      // Match the actual domains, not the bare word "base44".
+      if (tech.includes("base44.app") || tech.includes("base44.com")) {
+        return { evidence: "Base44 script/meta artifact", weak: true };
       }
       return null;
     },
@@ -122,12 +138,12 @@ export const fingerprintSignals: SignalRule[] = [
     description: "Replit hosting or build artifacts were detected.",
     test: (ctx) => {
       const host = ctx.url.hostname;
-      const html = rawHtml(ctx);
-      if (
-        host.endsWith("replit.app") || host.endsWith("repl.co") || host.endsWith("replit.dev") ||
-        html.includes("replit.app") || html.includes(".repl.co")
-      ) {
-        return { evidence: "Replit hosting / reference" };
+      if (host.endsWith("replit.app") || host.endsWith("repl.co") || host.endsWith("replit.dev")) {
+        return { evidence: "Replit hosting" };
+      }
+      const tech = techSurface(ctx);
+      if (tech.includes("replit.app") || tech.includes(".repl.co")) {
+        return { evidence: "Replit script/meta artifact", weak: true };
       }
       return null;
     },
@@ -139,10 +155,12 @@ export const fingerprintSignals: SignalRule[] = [
     label: "AI website builder detected",
     description: "Markers from an AI website builder (Tempo, Create.xyz, Rocket, etc.) were found.",
     test: (ctx) => {
-      const html = rawHtml(ctx);
       const markers = ["create.xyz", "rocket.new", "tempolabs", "tempo.new", "tempo.build", "new.website", "databutton", "softgen.ai"];
-      const hit = markers.find((m) => html.includes(m) || ctx.url.hostname.endsWith(m));
-      return hit ? { evidence: hit } : null;
+      const hostHit = markers.find((m) => ctx.url.hostname.endsWith(m));
+      if (hostHit) return { evidence: `hosted on ${hostHit}` };
+      const tech = techSurface(ctx);
+      const techHit = markers.find((m) => tech.includes(m));
+      return techHit ? { evidence: techHit, weak: true } : null;
     },
   },
 ];
