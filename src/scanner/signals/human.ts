@@ -9,7 +9,7 @@ export const humanSignals: SignalRule[] = [
   {
     id: "human.real-pages",
     category: "human",
-    weight: -8,
+    weight: -4,
     label: "Real site pages",
     description: "Links to genuine pages (about, blog, pricing, docs) suggest real effort.",
     test: (ctx) => {
@@ -26,7 +26,7 @@ export const humanSignals: SignalRule[] = [
   {
     id: "human.github",
     category: "human",
-    weight: -5,
+    weight: -3,
     label: "Links to GitHub",
     description: "A real GitHub link points to actual source or a real person.",
     test: (ctx) => (rawHtml(ctx).includes("github.com/") ? { evidence: "github.com link" } : null),
@@ -34,7 +34,7 @@ export const humanSignals: SignalRule[] = [
   {
     id: "human.rich-meta",
     category: "human",
-    weight: -4,
+    weight: -2,
     label: "Considered metadata",
     description: "A real meta description plus Open Graph tags show care.",
     test: (ctx) => {
@@ -47,7 +47,7 @@ export const humanSignals: SignalRule[] = [
   {
     id: "human.custom-fonts",
     category: "human",
-    weight: -3,
+    weight: -2,
     label: "Custom typography",
     description: "Self-hosted or custom web fonts, not just system defaults.",
     test: (ctx) => (/@font-face|\.woff2?|use\.typekit|fonts\.bunny/.test(rawHtml(ctx)) ? { evidence: "custom web fonts" } : null),
@@ -55,7 +55,7 @@ export const humanSignals: SignalRule[] = [
   {
     id: "human.custom-favicon",
     category: "human",
-    weight: -3,
+    weight: -2,
     label: "Custom favicon",
     description: "A real, non-default favicon, a small sign someone cared.",
     test: (ctx) => {
