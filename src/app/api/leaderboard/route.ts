@@ -1,25 +1,40 @@
-// GET /api/leaderboard → { shame, fame, total }
-// shame = highest Slop Scores, fame = lowest. Powers the home preview and the
-// full leaderboard page (which filters/paginates client-side).
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+// GET /api/leaderboard
+//  - No params → { shame, fame, total }: top-10 previews for the home page.
+//  - ?tab=shame|fame&page=N&q=text → { rows, total, page, totalPages }: one
+//    10-row page for the /leaderboard board, paginated server-side so every
+//    scanned site is reachable (not just the top 100).
+import { NextRequest, NextResponse } from "next/server";
+import { boardPage } from "@/lib/leaderboard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-interface Row { host: string; slug: string; score: number }
-const toRows = (rows: Row[]) => rows.map((r) => ({ domain: r.host, slug: r.slug, score: r.score }));
+export async function GET(req: NextRequest) {
+  const params = req.nextUrl.searchParams;
+  const tab = params.get("tab");
 
-export async function GET() {
   try {
-    const [shame, fame, total] = await Promise.all([
-      db.check.findMany({ orderBy: [{ score: "desc" }, { updatedAt: "desc" }], take: 100, select: { host: true, slug: true, score: true } }),
-      db.check.findMany({ orderBy: [{ score: "asc" }, { updatedAt: "desc" }], take: 100, select: { host: true, slug: true, score: true } }),
-      db.check.count(),
-    ]);
-    return NextResponse.json({ shame: toRows(shame), fame: toRows(fame), total });
+    if (tab === null) {
+      const [shame, fame] = await Promise.all([boardPage("shame"), boardPage("fame")]);
+      return NextResponse.json({ shame: shame.rows, fame: fame.rows, total: shame.total });
+    }
+
+    if (tab !== "shame" && tab !== "fame") {
+      return NextResponse.json({ error: "tab must be 'shame' or 'fame'" }, { status: 400 });
+    }
+
+    // parseInt returns NaN on garbage; `|| 0` folds that (and negatives via
+    // Math.max) back to page 0. boardPage clamps the upper bound.
+    const page = Math.max(0, parseInt(params.get("page") ?? "0", 10) || 0);
+    const q = params.get("q") ?? "";
+    return NextResponse.json(await boardPage(tab, page, q));
   } catch (err) {
     console.error("[/api/leaderboard] error:", err);
-    return NextResponse.json({ shame: [], fame: [], total: 0 }, { status: 200 });
+    // Empty payload covering both response shapes, so neither consumer breaks
+    // when the DB is unavailable.
+    return NextResponse.json(
+      { shame: [], fame: [], rows: [], total: 0, page: 0, totalPages: 1 },
+      { status: 200 },
+    );
   }
 }
