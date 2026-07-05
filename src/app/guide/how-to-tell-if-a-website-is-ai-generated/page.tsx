@@ -94,6 +94,10 @@ const FAQ = [
     a: "Directionally, yes; with certainty, no. Detection works on tells: fingerprints, defaults, copy patterns, leftovers. A high score means a site looks templated and machine-made, not that no human was involved. Treat any detector's verdict as strong evidence, not proof.",
   },
   {
+    q: "My site was built entirely with AI. Why is my Slop Score low?",
+    a: "Because Slopdar isn't answering 'was AI used?'. It's answering 'did AI leave fingerprints behind?'. Those are different questions. If you rewrote the copy, customised the components and cut the generic sections, the fingerprints are gone, so the score is low. That's not a bug; it's the point. A low score on an AI-built site means the craftsmanship hid the tool, and that's exactly what good use of AI looks like.",
+  },
+  {
     q: "Is it bad if a website is AI-generated?",
     a: "Not automatically. AI tools let people ship things they couldn't build before, and that's genuinely good. It matters when the polish hides emptiness: a professional-looking storefront with no real company behind it. The signs in this guide help you judge trust, not taste.",
   },
@@ -174,8 +178,10 @@ export default function GuidePage() {
           </div>
           <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--ink2)", margin: "11px 0 0" }}>
             Every sign above also appears on plenty of hand-built sites; that&apos;s why honest detection weighs them together
-            instead of pouncing on one. Slopdar runs ~50 weighted checks across these categories and shows you the receipts,
-            so you can argue with the score instead of taking it on faith. It&apos;s signals, not proof.{" "}
+            instead of pouncing on one. The reverse holds too: a site built entirely with AI but properly refined will score
+            low, because the score measures the fingerprints left behind, not whether AI was used. Slopdar runs ~50 weighted
+            checks across these categories and shows you the receipts, so you can argue with the score instead of taking it
+            on faith. It&apos;s signals, not proof.{" "}
             <Link href="/how-it-works" className="h-brandtext" style={{ color: "var(--brand)", fontWeight: 700 }}>Here&apos;s exactly how the scoring works</Link>.
           </p>
         </div>
