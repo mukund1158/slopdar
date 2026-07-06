@@ -378,9 +378,9 @@ export default function SlopdarApp() {
           <div style={{ flex: "1 1 340px", minWidth: 280 }}>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--mut)" }}>Who&apos;s behind the radar</div>
             <h2 style={{ fontWeight: 900, fontStyle: "italic", fontSize: "clamp(30px,5vw,46px)", letterSpacing: "-.035em", lineHeight: .95, margin: "8px 0 0" }}>One guy.<br />Zero <span style={{ color: "var(--brand)" }}>slop</span>.</h2>
-            <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink2)", margin: "14px 0 0", maxWidth: 480 }}>Slopdar is built and run by Mukund: solo indie hacker, chronic 2am shipper, deeply suspicious of half the landing pages on the internet. No team, no funding. If something breaks, that&apos;s also him.</p>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink2)", margin: "14px 0 0", maxWidth: 480 }}>Hey, I&apos;m Mukund. I built Slopdar solo: no team, no funding, just me shipping at 2am because I got suspicious of half the landing pages on the internet. If something breaks, that&apos;s also me.</p>
             <div style={{ marginTop: 18 }}>
-              <Link href="/about" className="h-brandtext" style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: "var(--brand)", textDecoration: "none", borderBottom: "2px solid var(--brand)", paddingBottom: 2 }}>More about Mukund →</Link>
+              <Link href="/about" className="h-brandtext" style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: "var(--brand)", textDecoration: "none", borderBottom: "2px solid var(--brand)", paddingBottom: 2 }}>More about me →</Link>
             </div>
           </div>
         </div>
