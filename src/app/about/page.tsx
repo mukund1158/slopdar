@@ -10,7 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "About Slopdar — who's behind the radar",
   description:
-    "Slopdar is a fun radar for AI-generated and vibe-coded websites, built solo by indie hacker Mukund. Paste a link, get a Slop Score, see the receipts.",
+    "Slopdar is a fun radar for AI-generated and vibe-coded websites. I'm Mukund and I built it solo. Paste a link, get a Slop Score, see the receipts.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: "About Slopdar",
@@ -49,12 +49,14 @@ export default function AboutPage() {
         <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--ink2)", margin: "14px 0 0" }}>Everyone ships AI-generated sites now. Nobody can tell anymore whether a thing was built by a person or churned out by a tool in nine minutes. Slopdar is a dumb little radar for exactly that question: paste a link, get a score, see the receipts, share the damage.</p>
 
         <div style={{ marginTop: 26, ...card, borderRadius: 18, padding: 24, boxShadow: "0 6px 0 rgba(0,0,0,.1)", display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ width: 74, height: 74, flexShrink: 0, border: "2px solid var(--ink)", borderRadius: 16, background: "#FFE9D6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38 }}>👨‍💻</div>
+          <div style={{ width: 74, height: 74, flexShrink: 0, border: "2px solid var(--ink)", borderRadius: 16, overflow: "hidden", background: "#FFE9D6" }}>
+            <img src="/mukund.jpg" alt="Mukund, the person who built Slopdar" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
           <div style={{ flex: 1, minWidth: 220 }}>
-            <div style={{ fontWeight: 900, fontSize: 20, letterSpacing: "-.01em" }}>Built by Mukund</div>
+            <div style={{ fontWeight: 900, fontSize: 20, letterSpacing: "-.01em" }}>Hi, I&apos;m Mukund</div>
             <a href="https://x.com/mukparekh" target="_blank" rel="noopener" className="h-underline" style={{ display: "inline-block", fontFamily: MONO, fontSize: 12, color: "var(--brand)", marginTop: 3, textDecoration: "none" }}>@mukparekh on X ↗</a>
             <div style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", marginTop: 2 }}>solo indie hacker · ships at 2am</div>
-            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--ink2)", margin: "12px 0 0" }}>One person, a weekend that turned into several, and a deep suspicion about half the landing pages on the internet. No team, no funding, no roadmap deck. If something breaks, that&apos;s also Mukund.</p>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--ink2)", margin: "12px 0 0" }}>I built Slopdar alone: a weekend project that turned into several weekends, powered by a deep suspicion about half the landing pages on the internet. No team, no funding, no roadmap deck. If something breaks, that&apos;s also me.</p>
           </div>
         </div>
 
@@ -76,7 +78,7 @@ export default function AboutPage() {
           <p style={{ fontSize: 18, lineHeight: 1.5, fontWeight: 800, letterSpacing: "-.01em", margin: "10px 0 0" }}>Yes, Slopdar runs on the slop stack. Next.js, a tidy little gradient, more lucide icons than we&apos;d like to admit. We know. We scored ourselves and we did not enjoy it.</p>
         </div>
 
-        <div style={{ ...eyebrow, marginTop: 30, marginBottom: 14 }}>More from Mukund</div>
+        <div style={{ ...eyebrow, marginTop: 30, marginBottom: 14 }}>More stuff I built</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
           {[
             { href: "https://postvoy.com", emoji: "📣", host: "postvoy.com ↗", name: "Postvoy", desc: "An operator, not a bot, that runs your X account in your voice. Autonomous growth for SaaS founders who'd rather ship." },
