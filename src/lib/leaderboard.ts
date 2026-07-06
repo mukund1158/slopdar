@@ -8,10 +8,10 @@ import type { Prisma } from "@prisma/client";
 export const PAGE_SIZE = 10;
 
 export type BoardTab = "shame" | "fame";
-export interface BoardRow { domain: string; slug: string; score: number }
+export interface BoardRow { domain: string; slug: string; score: number; checkCount: number }
 export interface BoardPage { rows: BoardRow[]; total: number; page: number; totalPages: number }
 
-const select = { host: true, slug: true, score: true } as const;
+const select = { host: true, slug: true, score: true, checkCount: true } as const;
 
 // Ties broken by updatedAt then id so pagination is stable: sites with the
 // same score keep a fixed order, so rows never repeat or vanish across pages.
@@ -38,7 +38,7 @@ export async function boardPage(tab: BoardTab, requestedPage = 0, q = ""): Promi
     select,
   });
   return {
-    rows: rows.map((r) => ({ domain: r.host, slug: r.slug, score: r.score })),
+    rows: rows.map((r) => ({ domain: r.host, slug: r.slug, score: r.score, checkCount: r.checkCount })),
     total,
     page,
     totalPages,

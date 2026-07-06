@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { tierOf } from "@/lib/tiers";
 import { roastSetFor } from "@/lib/roasts";
+import { roastCountLine } from "@/lib/roast-count";
 import { categoryLabel } from "@/lib/categories";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
@@ -82,6 +83,7 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
                 </div>
               </div>
               <div style={{ display: "inline-flex", fontFamily: SANS, fontWeight: 900, fontSize: 18, letterSpacing: ".02em", textTransform: "uppercase", color: "#fff", background: tier.color, border: "2px solid var(--ink)", borderRadius: 8, padding: "7px 16px", marginTop: 14, transform: "rotate(-3deg)", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>{tier.label}</div>
+              <div style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", marginTop: 12 }}>🔥 {roastCountLine(check.checkCount)}</div>
             </div>
             <div style={{ flex: "1 1 360px", minWidth: 300, textAlign: "left" }}>
               <h1 style={{ fontWeight: 900, fontSize: "clamp(28px,5vw,44px)", letterSpacing: "-.03em", lineHeight: 1.02, margin: 0, wordBreak: "break-word" }}>
