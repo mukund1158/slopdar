@@ -9,6 +9,7 @@ import Link from "next/link";
 import { tierOf } from "@/lib/tiers";
 import { categoryLabel } from "@/lib/categories";
 import { roastSetFor } from "@/lib/roasts";
+import { roastCountLine } from "@/lib/roast-count";
 import { SANS, MONO, card, btnBrand, btnGhost } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -21,8 +22,9 @@ interface CheckResult {
   slug: string; url: string; host: string; score: number; tier: string;
   screenshot: string | null; title: string | null;
   signals: Receipt[]; tech: Tech[]; scanError: string | null; scannedAt?: string;
+  checkCount?: number; // optional: older cached results predate the field
 }
-interface LeaderRow { domain: string; slug: string; score: number }
+interface LeaderRow { domain: string; slug: string; score: number; checkCount?: number }
 
 const SCAN_QUIPS = [
   "Sniffing for lucide icons…", "Measuring gradient blob radius…", "Counting the bento boxes…",
@@ -279,6 +281,7 @@ export default function SlopdarApp() {
           <button key={r.slug} className={rowHover} onClick={() => doCheck(r.domain)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "transparent", border: "none", borderTop: "1px solid var(--line)", padding: "13px 18px", cursor: "pointer", textAlign: "left", fontFamily: SANS }}>
             <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", minWidth: 20 }}>{String(i + 1).padStart(2, "0")}</span>
             <span style={{ fontFamily: MONO, fontSize: 13.5, color: "var(--ink)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.domain}</span>
+            {typeof r.checkCount === "number" && <span style={{ fontFamily: MONO, fontSize: 11.5, color: "var(--mut)", flexShrink: 0 }}>🔥 {r.checkCount}</span>}
             <span style={{ fontWeight: 900, fontSize: 23, letterSpacing: "-.03em", color: tierOf(r.score).color }}>{r.score}</span>
           </button>
         ))}
@@ -433,6 +436,7 @@ export default function SlopdarApp() {
               <div style={{ fontFamily: MONO, fontSize: 13, color: "var(--ink2)" }}>
                 Verdict for <span style={{ color: "var(--ink)", fontWeight: 600 }}>{domain}</span>
                 {result.scannedAt && <span style={{ color: "var(--mut)" }}> · scanned {timeAgo(result.scannedAt)}</span>}
+                {typeof result.checkCount === "number" && <span style={{ color: "var(--mut)" }}> · 🔥 {roastCountLine(result.checkCount)}</span>}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <button className="h-ink" onClick={() => doCheck(result.url, { force: true })} style={{ background: "var(--card)", border: "2px solid var(--ink)", color: "var(--ink)", fontFamily: SANS, fontWeight: 700, fontSize: 13, padding: "9px 15px", borderRadius: 9, cursor: "pointer" }}>↻ Re-scan</button>
