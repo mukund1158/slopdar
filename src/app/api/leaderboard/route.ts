@@ -4,7 +4,7 @@
 //    10-row page for the /leaderboard board, paginated server-side so every
 //    scanned site is reachable (not just the top 100).
 import { NextRequest, NextResponse } from "next/server";
-import { boardPage } from "@/lib/leaderboard";
+import { boardPage, homeBoards } from "@/lib/leaderboard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
 
   try {
     if (tab === null) {
-      const [shame, fame] = await Promise.all([boardPage("shame"), boardPage("fame")]);
-      return NextResponse.json({ shame: shame.rows, fame: fame.rows, total: shame.total });
+      // Home page: today's sites (auto-widened when today is thin), not all-time.
+      return NextResponse.json(await homeBoards());
     }
 
     if (tab !== "shame" && tab !== "fame") {

@@ -329,8 +329,8 @@ export default function SlopdarApp() {
           <Link href="/leaderboard" className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Full board →</Link>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-          {boardCard("Wall of Shame", "Sloppiest sites this week", "🔥", "#FFECEA", "h-rowshame", (board?.shame ?? []).slice(0, 5))}
-          {boardCard("Hall of Fame", "Most hand-crafted, allegedly", "✨", "#EAF9F0", "h-rowfame", (board?.fame ?? []).slice(0, 5))}
+          {boardCard("Wall of Shame", "Today's sloppiest finds", "🔥", "#FFECEA", "h-rowshame", (board?.shame ?? []).slice(0, 5))}
+          {boardCard("Hall of Fame", "Today's cleanest, allegedly", "✨", "#EAF9F0", "h-rowfame", (board?.fame ?? []).slice(0, 5))}
         </div>
       </section>
 
