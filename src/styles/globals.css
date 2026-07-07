@@ -55,6 +55,12 @@ a { color: inherit; }
 .h-lift { transition: transform .12s ease, box-shadow .12s ease; }
 .h-lift:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.12); }
 
+/* Launch badge marquee: one gliding row, paused while hovered so the badges
+   stay clickable. Reduced-motion users get no animation (rule below). */
+.badge-marquee { overflow: hidden; }
+.badge-track { display: flex; width: max-content; animation: marquee 36s linear infinite; }
+.badge-marquee:hover .badge-track { animation-play-state: paused; }
+
 /* Share-modal action buttons */
 .share-btn { transition: transform .1s ease, box-shadow .1s ease; }
 .share-btn:hover { transform: translateY(-1px); }
@@ -80,4 +86,8 @@ a { color: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  /* Static marquee would clip the badges: fall back to a scrollable row
+     without the seamless-loop duplicate. */
+  .badge-marquee { overflow-x: auto; }
+  .badge-dup { display: none !important; }
 }
