@@ -12,7 +12,7 @@ import { SANS, MONO, card, btnGhost, btnBrand } from "@/components/slopdar/ui";
 
 const PAGE_SIZE = 10;
 
-interface Row { domain: string; slug: string; score: number }
+interface Row { domain: string; slug: string; score: number; checkCount?: number }
 interface Board { rows: Row[]; total: number; totalPages: number }
 
 export default function LeaderboardView({ shame, fame, total }: { shame: Row[]; fame: Row[]; total: number }) {
@@ -79,6 +79,7 @@ export default function LeaderboardView({ shame, fame, total }: { shame: Row[]; 
               <span style={{ fontFamily: MONO, fontSize: 13, color: "var(--mut)", minWidth: 26 }}>{String(page * PAGE_SIZE + i + 1).padStart(2, "0")}</span>
               <span style={{ fontFamily: MONO, fontSize: 14, color: "var(--ink)", width: 180, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.domain}</span>
               <span style={{ flex: 1, height: 8, background: "var(--line)", borderRadius: 5, overflow: "hidden", minWidth: 50 }}><span style={{ display: "block", height: "100%", width: `${r.score}%`, background: t.color }} /></span>
+              {typeof r.checkCount === "number" && <span title={`roasted ${r.checkCount} ${r.checkCount === 1 ? "time" : "times"}`} style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", width: 54, textAlign: "right", flexShrink: 0 }}>🔥 {r.checkCount}</span>}
               <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".04em", textTransform: "uppercase", color: t.color, width: 118, textAlign: "right", flexShrink: 0 }}>{t.label}</span>
               <span style={{ fontWeight: 900, fontSize: 22, letterSpacing: "-.03em", color: t.color, minWidth: 42, textAlign: "right" }}>{r.score}</span>
             </Link>
