@@ -25,6 +25,8 @@ interface CheckResult {
   checkCount?: number; // optional: older cached results predate the field
 }
 interface LeaderRow { domain: string; slug: string; score: number; checkCount?: number }
+interface WeeklyWinner { domain: string; slug: string; score: number; screenshot: string | null }
+interface Weekly { weekStart: string; slop: WeeklyWinner | null; craft: WeeklyWinner | null }
 
 const SCAN_QUIPS = [
   "Sniffing for lucide icons…", "Measuring gradient blob radius…", "Counting the bento boxes…",
@@ -84,7 +86,7 @@ export default function SlopdarApp() {
   const [embedDomain, setEmbedDomain] = useState("yoursite.com");
   const [embedScore, setEmbedScore] = useState<number | null>(null);
 
-  const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number } | null>(null);
+  const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number; weekly?: Weekly } | null>(null);
   const [liveCount, setLiveCount] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -289,6 +291,33 @@ export default function SlopdarApp() {
     );
   }
 
+  function weeklyCard(title: string, emoji: string, w: WeeklyWinner, weekStartIso: string) {
+    const t = tierOf(w.score);
+    const roast = roastSetFor(t.label).roasts[0];
+    const start = new Date(weekStartIso);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return (
+      <Link href={`/r/${w.slug}`} className="h-lift" style={{ flex: "1 1 320px", minWidth: 280, display: "flex", gap: 16, alignItems: "center", background: t.tint, border: "2px solid var(--ink)", borderRadius: 16, padding: 18, boxShadow: "0 6px 0 rgba(0,0,0,.1)", textDecoration: "none", color: "inherit" }}>
+        {w.screenshot && (
+          <span style={{ width: 96, flexShrink: 0, border: "2px solid var(--ink)", borderRadius: 10, overflow: "hidden", background: "var(--card)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={w.screenshot} alt={`Screenshot of ${w.domain}`} style={{ display: "block", width: "100%", aspectRatio: "4/3", objectFit: "cover", objectPosition: "top" }} />
+          </span>
+        )}
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontFamily: MONO, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink2)", fontWeight: 600 }}>{emoji} {title} · {fmt(start)} to {fmt(end)}</span>
+          <span style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 6 }}>
+            <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "-.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.domain}</span>
+            <span style={{ fontWeight: 900, fontSize: 26, letterSpacing: "-.03em", color: t.color, flexShrink: 0 }}>{w.score}</span>
+          </span>
+          <span style={{ display: "block", fontSize: 13, lineHeight: 1.45, color: "var(--ink2)", marginTop: 4, fontStyle: "italic" }}>&ldquo;{roast}&rdquo;</span>
+        </span>
+      </Link>
+    );
+  }
+
   const renderHome = () => (
     <>
       <section style={{ position: "relative", maxWidth: 880, margin: "0 auto", padding: "78px 28px 30px", textAlign: "center" }}>
@@ -328,6 +357,12 @@ export default function SlopdarApp() {
           </div>
           <Link href="/leaderboard" className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Full board →</Link>
         </div>
+        {(board?.weekly?.slop || board?.weekly?.craft) && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 16 }}>
+            {board?.weekly?.slop && weeklyCard("Slop of the Week", "👑", board.weekly.slop, board.weekly.weekStart)}
+            {board?.weekly?.craft && weeklyCard("Craft of the Week", "✨", board.weekly.craft, board.weekly.weekStart)}
+          </div>
+        )}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {boardCard("Wall of Shame", "Today's sloppiest finds", "🔥", "#FFECEA", "h-rowshame", (board?.shame ?? []).slice(0, 5))}
           {boardCard("Hall of Fame", "Today's cleanest, allegedly", "✨", "#EAF9F0", "h-rowfame", (board?.fame ?? []).slice(0, 5))}
