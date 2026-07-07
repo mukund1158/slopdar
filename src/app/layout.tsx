@@ -44,6 +44,8 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', '${GA_ID}');`}
         </Script>
+        {/* TrustViews (feeds the launch badge's live stats) */}
+        <Script src="https://trustviews.io/script.js" data-token="527ab580-2ff2-46b3-8329-96af9ed0f735" strategy="afterInteractive" />
       </body>
     </html>
   );
