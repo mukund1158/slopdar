@@ -41,6 +41,11 @@ const LAUNCH_BADGES: LaunchBadge[] = [
     embed: <img src="https://wired.business/badge0-white.svg" alt="Featured on Wired Business" width={200} height={54} style={{ display: "block" }} />,
   },
   {
+    name: "FoundrList",
+    href: "https://www.foundrlist.com/product/slopdar?utm_source=badge&utm_medium=embed",
+    embed: <img src="https://www.foundrlist.com/api/badge/slopdar" alt="Featured on FoundrList" width={150} height={48} style={{ display: "block" }} />,
+  },
+  {
     name: "Tiny Startups",
     href: "https://www.tinystartups.com/startup/slopdar",
     bare: true,
@@ -81,31 +86,37 @@ const tilt = (i: number) => `rotate(${i % 2 === 0 ? -2 : 1.6}deg)`;
 export default function LaunchBadges() {
   return (
     <section style={{ maxWidth: 1060, margin: "0 auto", padding: "56px 28px 0" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 34, alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ flex: "1 1 320px", minWidth: 280 }}>
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--mut)" }}>Out in the wild</div>
-          <h2 style={{ fontWeight: 900, fontSize: "clamp(28px,4.6vw,44px)", letterSpacing: "-.03em", margin: "8px 0 0", lineHeight: .98 }}>Launched, <span style={{ fontStyle: "italic", color: "var(--brand)" }}>loudly</span>.</h2>
-          <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink2)", margin: "12px 0 0", maxWidth: 440 }}>I launched Slopdar on these platforms, live and in public. If you spotted us there, an upvote keeps the radar spinning.</p>
-        </div>
+      <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto" }}>
+        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--mut)" }}>Out in the wild</div>
+        <h2 style={{ fontWeight: 900, fontSize: "clamp(28px,4.6vw,44px)", letterSpacing: "-.03em", margin: "8px 0 0", lineHeight: .98 }}>Launched, <span style={{ fontStyle: "italic", color: "var(--brand)" }}>loudly</span>.</h2>
+        <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink2)", margin: "12px 0 0" }}>I launched Slopdar on these platforms, live and in public. If you spotted us there, an upvote keeps the radar spinning.</p>
+      </div>
 
-        <div style={{ flex: "1 1 340px", minWidth: 280, display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", justifyContent: "center" }}>
-          {LAUNCH_BADGES.map((b, i) => (
-            <div key={b.name} style={{ transform: tilt(i) }}>
-              {b.embed && b.bare ? (
-                // Self-contained badge: it is already a styled link, so no frame.
-                b.embed
-              ) : b.embed ? (
-                // Real platform badge: frame it so it sits in the design.
-                <a href={b.href} target="_blank" rel="noopener noreferrer" className="h-lift" aria-label={`Slopdar on ${b.name}`} style={{ display: "inline-flex", background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 12, padding: 8, boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>
-                  {b.embed}
-                </a>
-              ) : (
-                // Placeholder chip until the platform's snippet is pasted in.
-                <a href={b.href} target="_blank" rel="noopener noreferrer" className="h-lift" aria-label={`Slopdar on ${b.name}`} style={{ display: "inline-flex", textDecoration: "none", fontFamily: MONO, fontSize: 13, border: "2px solid var(--ink)", borderRadius: 9, overflow: "hidden", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>
-                  <span style={{ background: "var(--brand)", color: "#fff", padding: "10px 13px", fontWeight: 700 }}>live on</span>
-                  <span style={{ background: "var(--card)", color: "var(--ink)", padding: "10px 13px", fontWeight: 700 }}>{b.name} <span style={{ color: "var(--brand)" }}>↗</span></span>
-                </a>
-              )}
+      {/* One gliding row, like the roast ticker. The list renders twice for a
+          seamless loop; the copy is inert so links and readers see it once. */}
+      <div className="badge-marquee" style={{ marginTop: 24, padding: "14px 0 18px" }}>
+        <div className="badge-track">
+          {[false, true].map((dup) => (
+            <div key={dup ? "dup" : "main"} className={dup ? "badge-dup" : undefined} inert={dup} aria-hidden={dup || undefined} style={{ display: "flex", flexShrink: 0, alignItems: "center", gap: 22, paddingRight: 22 }}>
+              {LAUNCH_BADGES.map((b, i) => (
+                <div key={b.name} style={{ transform: tilt(i), flexShrink: 0 }}>
+                  {b.embed && b.bare ? (
+                    // Self-contained badge: it is already a styled link, so no frame.
+                    b.embed
+                  ) : b.embed ? (
+                    // Real platform badge: frame it so it sits in the design.
+                    <a href={b.href} target="_blank" rel="noopener noreferrer" className="h-lift" aria-label={`Slopdar on ${b.name}`} style={{ display: "inline-flex", background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 12, padding: 8, boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>
+                      {b.embed}
+                    </a>
+                  ) : (
+                    // Placeholder chip until the platform's snippet is pasted in.
+                    <a href={b.href} target="_blank" rel="noopener noreferrer" className="h-lift" aria-label={`Slopdar on ${b.name}`} style={{ display: "inline-flex", textDecoration: "none", fontFamily: MONO, fontSize: 13, border: "2px solid var(--ink)", borderRadius: 9, overflow: "hidden", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>
+                      <span style={{ background: "var(--brand)", color: "#fff", padding: "10px 13px", fontWeight: 700 }}>live on</span>
+                      <span style={{ background: "var(--card)", color: "var(--ink)", padding: "10px 13px", fontWeight: 700 }}>{b.name} <span style={{ color: "var(--brand)" }}>↗</span></span>
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
           ))}
         </div>
