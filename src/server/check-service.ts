@@ -56,6 +56,7 @@ export interface CheckResponse {
   tech: { name: string; category?: string; confidence: number }[];
   scanError: string | null;
   scannedAt: string; // ISO timestamp of the live scan (preserved across cache hits)
+  checkCount: number; // how many times this URL has been roasted
   cached: boolean;
 }
 
@@ -163,6 +164,7 @@ export async function runCheck(rawUrl: string, opts: { force?: boolean } = {}): 
     tech: result.tech,
     scanError: result.fetchError ?? null,
     scannedAt: saved.updatedAt.toISOString(),
+    checkCount: saved.checkCount,
     cached: false,
   };
 
