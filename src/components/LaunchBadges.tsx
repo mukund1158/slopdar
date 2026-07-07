@@ -10,6 +10,7 @@ interface LaunchBadge {
   name: string; // platform name shown on the placeholder chip
   href: string; // the launch page the badge links to
   embed?: React.ReactNode; // the platform's official badge snippet, as JSX
+  bare?: boolean; // true when the snippet is a fully styled anchor already: render it as-is, no frame
 }
 
 /* eslint-disable @next/next/no-img-element -- external badge images from the launch platforms */
@@ -39,6 +40,38 @@ const LAUNCH_BADGES: LaunchBadge[] = [
     href: "https://wired.business",
     embed: <img src="https://wired.business/badge0-white.svg" alt="Featured on Wired Business" width={200} height={54} style={{ display: "block" }} />,
   },
+  {
+    name: "Tiny Startups",
+    href: "https://www.tinystartups.com/startup/slopdar",
+    bare: true,
+    // Tiny Startups' own badge markup, converted to JSX. It brings its own
+    // gradient border; we only add the wall's hard shadow and hover lift.
+    embed: (
+      <a
+        href="https://www.tinystartups.com/startup/slopdar"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="h-lift"
+        style={{ display: "inline-flex", alignItems: "center", gap: 14, padding: "14px 22px 14px 18px", borderRadius: 14, textDecoration: "none", fontFamily: "'Inter',system-ui,sans-serif", background: "linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#3525E6,#D81FE0,#22B8F0) border-box", border: "2px solid transparent", color: "#0E0B1F", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}
+      >
+        <svg width="56" height="56" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="tsg" x1=".1" y1="0" x2=".9" y2="1">
+              <stop offset="0%" stopColor="#3525E6" />
+              <stop offset="55%" stopColor="#D81FE0" />
+              <stop offset="100%" stopColor="#22B8F0" />
+            </linearGradient>
+          </defs>
+          <path d="M50 6C52 32 68 48 94 50C68 52 52 68 50 94C48 68 32 52 6 50C32 48 48 32 50 6Z" fill="url(#tsg)" />
+        </svg>
+        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+          <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 600, letterSpacing: ".18em", textTransform: "uppercase", color: "#6A6585" }}>Launched on</span>
+          <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-.025em" }}>Tiny Startups</span>
+          <span style={{ fontSize: 11, color: "#6A6585", marginTop: 4 }}>tinystartups.com</span>
+        </span>
+      </a>
+    ),
+  },
 ];
 /* eslint-enable @next/next/no-img-element */
 
@@ -58,7 +91,10 @@ export default function LaunchBadges() {
         <div style={{ flex: "1 1 340px", minWidth: 280, display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", justifyContent: "center" }}>
           {LAUNCH_BADGES.map((b, i) => (
             <div key={b.name} style={{ transform: tilt(i) }}>
-              {b.embed ? (
+              {b.embed && b.bare ? (
+                // Self-contained badge: it is already a styled link, so no frame.
+                b.embed
+              ) : b.embed ? (
                 // Real platform badge: frame it so it sits in the design.
                 <a href={b.href} target="_blank" rel="noopener noreferrer" className="h-lift" aria-label={`Slopdar on ${b.name}`} style={{ display: "inline-flex", background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 12, padding: 8, boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>
                   {b.embed}
