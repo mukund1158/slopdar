@@ -13,6 +13,7 @@ import { roastCountLine } from "@/lib/roast-count";
 import { SANS, MONO, card, btnBrand, btnGhost } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import LaunchBadges from "@/components/LaunchBadges";
 
 type Screen = "home" | "scanning" | "result" | "unreachable";
 
@@ -388,6 +389,8 @@ export default function SlopdarApp() {
           </div>
         </div>
       </section>
+
+      <LaunchBadges />
 
       <section style={{ ...sectionPad }}>
         <div style={{ ...card, borderRadius: 18, padding: 30, boxShadow: "0 6px 0 rgba(0,0,0,.1)", display: "flex", flexWrap: "wrap", gap: 30, alignItems: "center", justifyContent: "space-between" }}>
