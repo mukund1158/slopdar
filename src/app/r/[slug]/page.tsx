@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { tierOf } from "@/lib/tiers";
-import { roastSetFor } from "@/lib/roasts";
+import { pickRoast } from "@/lib/roasts";
 import { roastCountLine } from "@/lib/roast-count";
 import { categoryLabel } from "@/lib/categories";
 import { SANS, MONO } from "@/components/slopdar/ui";
@@ -48,8 +48,8 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
   if (!check) notFound();
 
   const tier = tierOf(check.score);
-  const rset = roastSetFor(tier.label);
   const tells = check.signals.filter((s) => s.weight > 0).sort((a, b) => b.weight - a.weight);
+  const roast = pickRoast(tier.label, check.slug, tells.map((t) => t.signalId));
   const human = check.signals.filter((s) => s.weight < 0);
   const ang = (check.score / 100) * 360;
 
@@ -93,7 +93,7 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
                 Slopdar scanned <strong>{check.host}</strong> and gave it a Slop Score of <strong>{check.score}/100</strong> ({tier.label}). {tells.length} AI / vibe-coding tells were found. These are signals, not proof.
               </p>
               <div style={{ background: "var(--card)", border: "2.5px solid var(--ink)", borderRadius: 14, padding: "18px 20px", marginTop: 16, boxShadow: "0 6px 0 rgba(0,0,0,.12)" }}>
-                <p style={{ margin: 0, fontSize: 19, lineHeight: 1.34, fontWeight: 600 }}>&ldquo;{rset.roasts[0]}&rdquo;</p>
+                <p style={{ margin: 0, fontSize: 19, lineHeight: 1.34, fontWeight: 600 }}>&ldquo;{roast}&rdquo;</p>
               </div>
               <Link href="/" style={{ display: "inline-block", marginTop: 16, background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 11, fontWeight: 800, fontSize: 14, padding: "12px 18px", textDecoration: "none", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>Scan your own site →</Link>
             </div>
