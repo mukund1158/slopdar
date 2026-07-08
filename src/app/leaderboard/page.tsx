@@ -5,8 +5,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { boardPage, type BoardRow } from "@/lib/leaderboard";
+import { weeklyWinners, type WeeklyWinners } from "@/lib/weekly";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import LeaderboardView from "@/components/LeaderboardView";
+import WeeklyWinnerCard from "@/components/WeeklyWinnerCard";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -28,11 +30,13 @@ export default async function LeaderboardPage() {
   let shame: BoardRow[] = [];
   let fame: BoardRow[] = [];
   let total = 0;
+  let weekly: WeeklyWinners | null = null;
   try {
-    const [s, f] = await Promise.all([boardPage("shame"), boardPage("fame")]);
+    const [s, f, w] = await Promise.all([boardPage("shame"), boardPage("fame"), weeklyWinners()]);
     shame = s.rows;
     fame = f.rows;
     total = s.total;
+    weekly = w;
   } catch {
     /* DB unavailable — render empty board */
   }
@@ -45,6 +49,13 @@ export default async function LeaderboardPage() {
         <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--mut)" }}>The board</div>
         <h1 style={{ fontWeight: 900, fontSize: "clamp(34px,6vw,60px)", letterSpacing: "-.035em", margin: "8px 0 0", lineHeight: .96 }}>The Leaderboard</h1>
         <p style={{ fontSize: 15, lineHeight: 1.5, color: "var(--ink2)", margin: "12px 0 0", maxWidth: 520 }}>The web&apos;s sloppiest and most hand-crafted sites, scored 0–100 by Slopdar. Tap any site to see its receipts.</p>
+
+        {(weekly?.slop || weekly?.craft) && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 24 }}>
+            {weekly?.slop && <WeeklyWinnerCard title="Slop of the Week" emoji="👑" winner={weekly.slop} weekStartIso={weekly.weekStart.toISOString()} />}
+            {weekly?.craft && <WeeklyWinnerCard title="Craft of the Week" emoji="✨" winner={weekly.craft} weekStartIso={weekly.weekStart.toISOString()} />}
+          </div>
+        )}
 
         <LeaderboardView shame={shame} fame={fame} total={total} />
 
