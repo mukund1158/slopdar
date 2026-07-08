@@ -46,6 +46,11 @@ const LAUNCH_BADGES: LaunchBadge[] = [
     embed: <img src="https://www.foundrlist.com/api/badge/slopdar" alt="Featured on FoundrList" width={150} height={48} style={{ display: "block" }} />,
   },
   {
+    name: "Dofollow.Tools",
+    href: "https://dofollow.tools",
+    embed: <img src="https://dofollow.tools/badge/badge_transparent.svg" alt="Featured on Dofollow.Tools" width={200} height={54} style={{ display: "block" }} />,
+  },
+  {
     name: "Tiny Startups",
     href: "https://www.tinystartups.com/startup/slopdar",
     bare: true,

@@ -7,7 +7,7 @@
 import { ImageResponse } from "next/og";
 import { db } from "@/lib/db";
 import { tierOf } from "@/lib/tiers";
-import { roastSetFor } from "@/lib/roasts";
+import { pickRoast } from "@/lib/roasts";
 import { archivo900, archivoItalic, plex400, plex600 } from "./og-fonts";
 
 export const runtime = "nodejs";
@@ -25,14 +25,14 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
 
   const check = await db.check
-    .findUnique({ where: { slug }, select: { host: true, score: true, signals: { where: { weight: { gt: 0 } }, select: { id: true } } } })
+    .findUnique({ where: { slug }, select: { host: true, score: true, signals: { where: { weight: { gt: 0 } }, select: { signalId: true } } } })
     .catch(() => null);
 
   const host = check?.host ?? slug;
   const score = check?.score ?? 0;
   const tellCount = check?.signals.length ?? 0;
   const tier = tierOf(score);
-  const roast = roastSetFor(tier.label).roasts[0];
+  const roast = pickRoast(tier.label, slug, check?.signals.map((s) => s.signalId) ?? []);
 
   const row = { display: "flex", alignItems: "center" } as const;
   const col = { display: "flex", flexDirection: "column" } as const;
