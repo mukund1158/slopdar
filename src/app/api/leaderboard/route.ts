@@ -5,6 +5,7 @@
 //    scanned site is reachable (not just the top 100).
 import { NextRequest, NextResponse } from "next/server";
 import { boardPage, homeBoards } from "@/lib/leaderboard";
+import { weeklyWinners } from "@/lib/weekly";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,8 +16,10 @@ export async function GET(req: NextRequest) {
 
   try {
     if (tab === null) {
-      // Home page: today's sites (auto-widened when today is thin), not all-time.
-      return NextResponse.json(await homeBoards());
+      // Home page: today's sites (auto-widened when today is thin), not
+      // all-time, plus the current Slop/Craft of the Week card data.
+      const [boards, weekly] = await Promise.all([homeBoards(), weeklyWinners()]);
+      return NextResponse.json({ ...boards, weekly });
     }
 
     if (tab !== "shame" && tab !== "fame") {
