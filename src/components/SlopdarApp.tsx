@@ -26,6 +26,8 @@ interface CheckResult {
   checkCount?: number; // optional: older cached results predate the field
 }
 interface LeaderRow { domain: string; slug: string; score: number; checkCount?: number }
+interface WeeklyWinner { domain: string; slug: string; score: number; screenshot: string | null }
+interface Weekly { weekStart: string; slop: WeeklyWinner | null; craft: WeeklyWinner | null }
 
 const SCAN_QUIPS = [
   "Sniffing for lucide icons…", "Measuring gradient blob radius…", "Counting the bento boxes…",
@@ -43,6 +45,38 @@ const BURNS = ["100% organic free-range slop", "is your hero just a v0 export?",
 const EXAMPLE_DOMAINS = ["stripe.com", "linear.app", "vercel.com"];
 
 const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+// ── Predict-before-the-reveal: lifetime radar stats live in localStorage ──
+const RADAR_KEY = "slopdar-radar";
+const SEEN_KEY = "slopdar-scanned-hosts"; // hosts this browser has scanned — repeats get no prediction
+interface RadarStats { guesses: number; correct: number; streak: number }
+function loadRadarStats(): RadarStats {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RADAR_KEY) ?? "");
+    if (typeof parsed?.guesses === "number" && typeof parsed?.correct === "number" && typeof parsed?.streak === "number") return parsed;
+  } catch { /* first visit or corrupted value — start fresh */ }
+  return { guesses: 0, correct: 0, streak: 0 };
+}
+function saveRadarStats(stats: RadarStats) {
+  try { localStorage.setItem(RADAR_KEY, JSON.stringify(stats)); } catch { /* private mode — stats just won't persist */ }
+}
+function loadSeenHosts(): string[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "");
+    if (Array.isArray(parsed)) return parsed.filter((h) => typeof h === "string");
+  } catch { /* first visit or corrupted value */ }
+  return [];
+}
+function markSeenHost(host: string) {
+  if (loadSeenHosts().includes(host)) return;
+  // Cap the list so localStorage can't grow forever; oldest entries drop off.
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...loadSeenHosts(), host].slice(-300))); } catch { /* non-fatal */ }
+}
+// The two calls: Built covers scores 0-50, Slop covers 51-100.
+const GUESS_OPTIONS = [
+  { label: "Built", emoji: "✨", color: "#10B95E", tint: "#EAF9F0", caption: "0 to 50 · a human touched this", cls: "radar-btn-built" },
+  { label: "Slop", emoji: "🔥", color: "#FF3B30", tint: "#FFECEA", caption: "51 to 100 · prompted and prayed", cls: "radar-btn-slop" },
+] as const;
 function displayDomain(raw: string): string {
   return raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
 }
@@ -77,6 +111,17 @@ export default function SlopdarApp() {
   const [scanPct, setScanPct] = useState(0);
   // Falls back to the emoji until a real photo exists at /public/mukund.jpg
   const [founderImgOk, setFounderImgOk] = useState(true);
+  // Predict-before-the-reveal state. The refs mirror state so the async
+  // doCheck always sees the latest values. When the scan finishes before the
+  // user has called it, the result parks in pendingRef and the reveal waits.
+  const [guess, setGuess] = useState<string | null>(null);
+  const guessRef = useRef<string | null>(null);
+  const [awaitingCall, setAwaitingCall] = useState(false); // prompt shown for this scan?
+  const awaitingRef = useRef(false);
+  const [scanDone, setScanDone] = useState(false); // scan finished, reveal gated on the call
+  const pendingRef = useRef<CheckResult | null>(null);
+  const skippedRef = useRef(false);
+  const [radarVerdict, setRadarVerdict] = useState<{ correct: boolean; streak: number; called: string; actual: string } | null>(null);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -85,7 +130,7 @@ export default function SlopdarApp() {
   const [embedDomain, setEmbedDomain] = useState("yoursite.com");
   const [embedScore, setEmbedScore] = useState<number | null>(null);
 
-  const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number } | null>(null);
+  const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number; weekly?: Weekly } | null>(null);
   const [liveCount, setLiveCount] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -140,6 +185,27 @@ export default function SlopdarApp() {
     rafRef.current = requestAnimationFrame(tick);
   }, []);
 
+  const reveal = useCallback((data: CheckResult, disp: string) => {
+    setResult(data); setDomain(data.host || disp);
+    setScreen("result"); animateScore(data.score);
+    refreshLeaderboard();
+    refreshCount();
+  }, [animateScore, refreshLeaderboard, refreshCount]);
+
+  // Score the user's call (exact tier match), persist the stats, mark the
+  // host as called (each site can only ever count once), then reveal.
+  const judgeAndReveal = useCallback((data: CheckResult, called: string | null, disp: string) => {
+    if (called && data.scanError == null) {
+      const actual = data.score >= 51 ? "Slop" : "Built";
+      const isCorrect = actual === called;
+      const s = loadRadarStats();
+      const next = { guesses: s.guesses + 1, correct: s.correct + (isCorrect ? 1 : 0), streak: isCorrect ? s.streak + 1 : 0 };
+      saveRadarStats(next);
+      setRadarVerdict({ correct: isCorrect, streak: next.streak, called, actual });
+    }
+    reveal(data, disp);
+  }, [reveal]);
+
   const doCheck = useCallback(async (raw: string, opts: { force?: boolean } = {}) => {
     const url = raw.trim();
     if (!url) return;
@@ -147,6 +213,11 @@ export default function SlopdarApp() {
     setScreen("scanning"); setDomain(disp); setResult(null);
     setDisplayScore(0); setRevealed(false); setToneMode("roast"); setRoastIdx(0);
     setShareOpen(false); setEmbedOpen(false); setScanPct(8); setScanQuipIdx(0);
+    setGuess(null); guessRef.current = null; setRadarVerdict(null);
+    skippedRef.current = false; pendingRef.current = null; setScanDone(false);
+    // Only prompt for websites this browser has never scanned before.
+    const prompt = !loadSeenHosts().includes(disp);
+    setAwaitingCall(prompt); awaitingRef.current = prompt;
 
     cleanupScan();
     quipRef.current = setInterval(() => setScanQuipIdx((i) => (i + 1) % SCAN_QUIPS.length), 280);
@@ -160,14 +231,30 @@ export default function SlopdarApp() {
       if (!res.ok) throw new Error("unreachable");
       const data: CheckResult = await res.json();
       cleanupScan(); setScanPct(100);
-      setResult(data); setDomain(data.host || disp);
-      setScreen("result"); animateScore(data.score);
-      refreshLeaderboard();
-      refreshCount();
+      markSeenHost(disp); // future scans of this host skip the prediction
+      if (!awaitingRef.current || guessRef.current || skippedRef.current) {
+        judgeAndReveal(data, guessRef.current, disp);
+      } else {
+        // Scan finished first — hold the reveal until the user calls or skips.
+        pendingRef.current = data;
+        setScanDone(true);
+      }
     } catch {
-      cleanupScan(); setScreen("unreachable");
+      cleanupScan(); pendingRef.current = null; setScreen("unreachable");
     }
-  }, [animateScore, cleanupScan, refreshLeaderboard, refreshCount]);
+  }, [cleanupScan, judgeAndReveal]);
+
+  const makeCall = (label: string) => {
+    setGuess(label); guessRef.current = label;
+    // If the scan already finished, the reveal was waiting on this call.
+    if (pendingRef.current) judgeAndReveal(pendingRef.current, label, domain);
+  };
+
+  const skipCall = () => {
+    skippedRef.current = true;
+    setAwaitingCall(false); awaitingRef.current = false;
+    if (pendingRef.current) reveal(pendingRef.current, domain);
+  };
 
   const reset = useCallback(() => {
     cleanupScan();
@@ -290,6 +377,33 @@ export default function SlopdarApp() {
     );
   }
 
+  function weeklyCard(title: string, emoji: string, w: WeeklyWinner, weekStartIso: string) {
+    const t = tierOf(w.score);
+    const roast = roastSetFor(t.label).roasts[0];
+    const start = new Date(weekStartIso);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return (
+      <Link href={`/r/${w.slug}`} className="h-lift" style={{ flex: "1 1 320px", minWidth: 280, display: "flex", gap: 16, alignItems: "center", background: t.tint, border: "2px solid var(--ink)", borderRadius: 16, padding: 18, boxShadow: "0 6px 0 rgba(0,0,0,.1)", textDecoration: "none", color: "inherit" }}>
+        {w.screenshot && (
+          <span style={{ width: 96, flexShrink: 0, border: "2px solid var(--ink)", borderRadius: 10, overflow: "hidden", background: "var(--card)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={w.screenshot} alt={`Screenshot of ${w.domain}`} style={{ display: "block", width: "100%", aspectRatio: "4/3", objectFit: "cover", objectPosition: "top" }} />
+          </span>
+        )}
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontFamily: MONO, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink2)", fontWeight: 600 }}>{emoji} {title} · {fmt(start)} to {fmt(end)}</span>
+          <span style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 6 }}>
+            <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "-.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.domain}</span>
+            <span style={{ fontWeight: 900, fontSize: 26, letterSpacing: "-.03em", color: t.color, flexShrink: 0 }}>{w.score}</span>
+          </span>
+          <span style={{ display: "block", fontSize: 13, lineHeight: 1.45, color: "var(--ink2)", marginTop: 4, fontStyle: "italic" }}>&ldquo;{roast}&rdquo;</span>
+        </span>
+      </Link>
+    );
+  }
+
   const renderHome = () => (
     <>
       <section style={{ position: "relative", maxWidth: 880, margin: "0 auto", padding: "78px 28px 30px", textAlign: "center" }}>
@@ -329,6 +443,12 @@ export default function SlopdarApp() {
           </div>
           <Link href="/leaderboard" className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Full board →</Link>
         </div>
+        {(board?.weekly?.slop || board?.weekly?.craft) && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 16 }}>
+            {board?.weekly?.slop && weeklyCard("Slop of the Week", "👑", board.weekly.slop, board.weekly.weekStart)}
+            {board?.weekly?.craft && weeklyCard("Craft of the Week", "✨", board.weekly.craft, board.weekly.weekStart)}
+          </div>
+        )}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {boardCard("Wall of Shame", "Today's sloppiest finds", "🔥", "#FFECEA", "h-rowshame", (board?.shame ?? []).slice(0, 5))}
           {boardCard("Hall of Fame", "Today's cleanest, allegedly", "✨", "#EAF9F0", "h-rowfame", (board?.fame ?? []).slice(0, 5))}
@@ -423,6 +543,10 @@ export default function SlopdarApp() {
       <div style={{ maxWidth: 380, height: 12, background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 8, margin: "24px auto 0", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${scanPct}%`, background: "var(--brand)", transition: "width .3s ease" }} />
       </div>
+
+      {awaitingCall && guess !== null && (
+        <div style={{ marginTop: 34, fontFamily: MONO, fontSize: 12.5, color: "var(--ink2)" }}>Call locked in: <span style={{ fontWeight: 700 }}>{guess}</span> · the radar will judge you shortly</div>
+      )}
     </section>
   );
 
@@ -447,6 +571,13 @@ export default function SlopdarApp() {
               </div>
             </div>
 
+            {radarVerdict && (
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                <span style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, background: radarVerdict.correct ? "#EAF9F0" : "#FFECEA", border: "2px solid var(--ink)", borderRadius: 9, padding: "9px 15px", boxShadow: "0 3px 0 rgba(0,0,0,.1)" }}>
+                  {radarVerdict.correct ? `📡 Called it: ${radarVerdict.actual}. Streak: ${radarVerdict.streak}` : `📡 Radar jammed. You called ${radarVerdict.called} · it's ${radarVerdict.actual}.`}
+                </span>
+              </div>
+            )}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 34, alignItems: "center", justifyContent: "center", textAlign: "center" }}>
               <div style={{ flex: "0 0 auto", animation: "shake .55s ease both" }}>
                 <div style={{ position: "relative", width: 260, height: 260 }}>
@@ -595,6 +726,49 @@ export default function SlopdarApp() {
       {isSlop && <div style={{ position: "fixed", inset: 0, zIndex: 54, pointerEvents: "none", boxShadow: "inset 0 0 140px rgba(255,59,48,.55)", animation: "alarm 1s ease-in-out 2" }} />}
 
       {/* share modal */}
+      {screen === "scanning" && awaitingCall && guess === null && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "#fff", backgroundImage: "linear-gradient(#EAE5D8 1px, transparent 1px), linear-gradient(90deg, #EAE5D8 1px, transparent 1px)", backgroundSize: "26px 26px", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, overflowY: "auto" }}>
+          <style>{`
+            @keyframes radarsweep { to { transform: rotate(360deg); } }
+            .radar-call-btn { transition: transform .12s ease, background .12s ease; }
+            .radar-call-btn:hover { transform: translateY(-3px); }
+            .radar-btn-built:hover { background: #10B95E !important; }
+            .radar-btn-built:hover span { color: #fff !important; }
+            .radar-btn-slop:hover { background: #FF3B30 !important; }
+            .radar-btn-slop:hover span { color: #fff !important; }
+            @media (prefers-reduced-motion: reduce) { .radar-sweep { animation: none !important; } }
+          `}</style>
+          <div style={{ width: "min(94vw,560px)", textAlign: "center" }}>
+            <div style={{ position: "relative", width: 168, height: 168, margin: "0 auto", borderRadius: "50%", border: "2.5px solid var(--ink)", background: "var(--card)", boxShadow: "0 8px 0 rgba(0,0,0,.1)", overflow: "hidden" }}>
+              <div style={{ position: "absolute", inset: 28, borderRadius: "50%", border: "1.5px dashed rgba(25,21,18,.3)" }} />
+              <div style={{ position: "absolute", inset: 56, borderRadius: "50%", border: "1.5px dashed rgba(25,21,18,.3)" }} />
+              <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(25,21,18,.2)" }} />
+              <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "rgba(25,21,18,.2)" }} />
+              <div className="radar-sweep" style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "conic-gradient(from 0deg, rgba(255,77,36,.4) 0deg, rgba(255,77,36,.08) 45deg, transparent 80deg)", animation: "radarsweep 2.6s linear infinite" }} />
+              <div style={{ position: "absolute", top: "31%", left: "63%", width: 8, height: 8, borderRadius: "50%", background: "var(--brand)", animation: "blip 1.6s ease-in-out infinite" }} />
+            </div>
+
+            <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase", marginTop: 26, color: "var(--brand)", fontWeight: 600, animation: scanDone ? "flick 1.2s ease-in-out infinite" : undefined }}>
+              {scanDone ? "▸ target locked · your call unlocks the score" : "▸ unidentified site on radar"}
+            </div>
+            <h3 style={{ fontFamily: SANS, fontWeight: 900, fontSize: "clamp(34px,7vw,54px)", letterSpacing: "-.035em", lineHeight: .95, margin: "14px 0 0", color: "var(--ink)" }}>Built, or <span style={{ fontStyle: "italic", color: "var(--brand)" }}>slop</span>?</h3>
+            <div style={{ fontFamily: MONO, fontSize: 12.5, color: "var(--mut)", marginTop: 12 }}>Make the call. The radar remembers who has good instincts.</div>
+
+            <div style={{ display: "flex", gap: 16, marginTop: 30, justifyContent: "center", flexWrap: "wrap" }}>
+              {GUESS_OPTIONS.map((o) => (
+                <button key={o.label} className={`radar-call-btn ${o.cls}`} onClick={() => makeCall(o.label)} style={{ flex: "1 1 200px", maxWidth: 240, background: o.tint, border: "2px solid var(--ink)", borderRadius: 14, padding: "20px 14px 16px", cursor: "pointer", boxShadow: "0 6px 0 rgba(0,0,0,.12)", fontFamily: SANS }}>
+                  <span style={{ display: "block", fontSize: 30 }}>{o.emoji}</span>
+                  <span style={{ display: "block", fontWeight: 900, fontSize: 24, letterSpacing: ".04em", textTransform: "uppercase", color: o.color, marginTop: 8 }}>{o.label}</span>
+                  <span style={{ display: "block", fontFamily: MONO, fontSize: 10.5, color: "var(--mut)", marginTop: 8 }}>{o.caption}</span>
+                </button>
+              ))}
+            </div>
+
+            <button onClick={skipCall} className="h-brandtext" style={{ marginTop: 26, background: "none", border: "none", fontFamily: MONO, fontSize: 12, color: "var(--mut)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>skip · just show the score</button>
+          </div>
+        </div>
+      )}
+
       {shareOpen && result && (
         <div onClick={() => setShareOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(25,21,18,.55)", backdropFilter: "blur(4px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "#fff", opacity: .85, marginBottom: 14 }}>Share card · 1200 × 630</div>
