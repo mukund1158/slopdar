@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { tierOf } from "@/lib/tiers";
 import { categoryLabel } from "@/lib/categories";
-import { roastSetFor } from "@/lib/roasts";
+import { roastSetFor, pickRoast } from "@/lib/roasts";
 import { roastCountLine } from "@/lib/roast-count";
 import { SANS, MONO, card, btnBrand, btnGhost } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
@@ -244,7 +244,8 @@ export default function SlopdarApp() {
   // ── derived (result) ─────────────────────────────────────────────────────
   const tier = useMemo(() => tierOf(result?.score ?? 0), [result]);
   const rset = useMemo(() => roastSetFor(tier.label), [tier.label]);
-  const roast = toneMode === "nice" ? rset.nice : rset.roasts[roastIdx % rset.roasts.length];
+  const tellIds = useMemo(() => (result?.signals ?? []).filter((s) => s.weight > 0).map((s) => s.id), [result]);
+  const roast = toneMode === "nice" ? rset.nice : pickRoast(tier.label, result?.slug ?? "", tellIds, roastIdx);
   const ang = (displayScore / 100) * 360;
   const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight).filter((w) => w > 0));
   const isSlop = screen === "result" && (result?.score ?? 0) > 75;
