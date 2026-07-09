@@ -165,12 +165,26 @@ export default function SlopdarApp() {
   useEffect(() => {
     refreshLeaderboard();
     refreshCount();
-    pollRef.current = setInterval(refreshCount, 5000);
+    // Poll only while the tab is actually visible: background tabs and
+    // headless crawlers parked on the page must not keep hitting the API.
+    const startPoll = () => {
+      if (pollRef.current == null) pollRef.current = setInterval(refreshCount, 30000);
+    };
+    const stopPoll = () => {
+      if (pollRef.current != null) { clearInterval(pollRef.current); pollRef.current = null; }
+    };
+    const onVisibility = () => {
+      if (document.hidden) stopPoll();
+      else { refreshCount(); startPoll(); }
+    };
+    if (!document.hidden) startPoll();
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      stopPoll();
       if (quipRef.current) clearInterval(quipRef.current);
       if (progRef.current) clearInterval(progRef.current);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (pollRef.current) clearInterval(pollRef.current);
     };
   }, [refreshLeaderboard, refreshCount]);
 
