@@ -78,6 +78,13 @@ const GUESS_OPTIONS = [
   { label: "Built", emoji: "✨", color: "#10B95E", tint: "#EAF9F0", caption: "a human touched this", cls: "stamp-call-built" },
   { label: "Slop", emoji: "🔥", color: "#FF3B30", tint: "#FFECEA", caption: "prompted and prayed", cls: "stamp-call-slop" },
 ] as const;
+// Anonymous fire-and-forget counter: did the visitor play the call or skip?
+// keepalive lets the request survive an immediate navigation away.
+function trackGuess(payload: { action: "call" | "skip"; correct?: boolean }) {
+  try {
+    fetch("/api/guess-stat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload), keepalive: true }).catch(() => {});
+  } catch { /* non-fatal */ }
+}
 function displayDomain(raw: string): string {
   return raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
 }
@@ -203,6 +210,7 @@ export default function SlopdarApp() {
       const next = { guesses: s.guesses + 1, correct: s.correct + (isCorrect ? 1 : 0), streak: isCorrect ? s.streak + 1 : 0 };
       saveRadarStats(next);
       setRadarVerdict({ correct: isCorrect, streak: next.streak, called, actual });
+      trackGuess({ action: "call", correct: isCorrect });
     }
     reveal(data, disp);
   }, [reveal]);
@@ -254,6 +262,7 @@ export default function SlopdarApp() {
   const skipCall = () => {
     skippedRef.current = true;
     setAwaitingCall(false); awaitingRef.current = false;
+    trackGuess({ action: "skip" });
     if (pendingRef.current) reveal(pendingRef.current, domain);
   };
 
