@@ -61,6 +61,18 @@ a { color: inherit; }
 .badge-track { display: flex; width: max-content; animation: marquee 36s linear infinite; }
 .badge-marquee:hover .badge-track { animation-play-state: paused; }
 
+/* Prediction stamps on the scanning screen. The tilt lives here (not inline)
+   so hover can straighten it; effects are gated to hover-capable devices so
+   taps on touch screens can't leave a button stuck in its hover state. */
+.stamp-call { transition: transform .12s ease; }
+.stamp-call-built { transform: rotate(-2.5deg); }
+.stamp-call-slop { transform: rotate(2deg); }
+@media (hover: hover) {
+  .stamp-call:hover { transform: rotate(0deg) translateY(-3px); }
+  .stamp-skip { transition: transform .12s ease; }
+  .stamp-skip:hover { transform: translateY(-2px); }
+}
+
 /* Share-modal action buttons */
 .share-btn { transition: transform .1s ease, box-shadow .1s ease; }
 .share-btn:hover { transform: translateY(-1px); }

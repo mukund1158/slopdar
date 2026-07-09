@@ -65,6 +65,16 @@ model TechStack {
   @@index([checkId])
 }
 
+/// Daily tally of the Built-or-Slop prediction prompt: did first-time
+/// scanners make the call or skip it? Anonymous counters only — this feeds
+/// the go/no-go decision on the daily guessing game (gamification idea 5).
+model GuessStat {
+  day     DateTime @id @db.Date
+  calls   Int      @default(0)
+  correct Int      @default(0)
+  skips   Int      @default(0)
+}
+
 /// Optional account (Google via Auth.js — wired up in a later phase).
 model User {
   id        String   @id @default(cuid())
