@@ -2,6 +2,8 @@
 // scanned during the current week (Monday 00:00 server time onward). Shown as
 // crowned cards on /leaderboard. Sites whose scan errored are excluded so a
 // broken fetch can't win either crown.
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { db } from "@/lib/db";
 
 export interface WeeklyWinner {
@@ -40,7 +42,10 @@ export async function weeklyWinners(): Promise<WeeklyWinners> {
     db.check.findFirst({ where: { ...base, score: { gte: 51 } }, orderBy: [{ score: "desc" }, { createdAt: "asc" }], select }),
     db.check.findFirst({ where: { ...base, score: { lte: 25 } }, orderBy: [{ score: "asc" }, { createdAt: "asc" }], select }),
   ]);
+  // DB rows can outlive their screenshot file; drop the path when the file is
+  // gone so the winner cards fall back to text instead of a broken image.
+  const shot = (s: string | null) => (s && existsSync(join(process.cwd(), "public", s)) ? s : null);
   const toWinner = (r: Row | null): WeeklyWinner | null =>
-    r ? { domain: r.host, slug: r.slug, score: r.score, screenshot: r.screenshot } : null;
+    r ? { domain: r.host, slug: r.slug, score: r.score, screenshot: shot(r.screenshot) } : null;
   return { weekStart: start, slop: toWinner(slop), craft: toWinner(craft) };
 }
