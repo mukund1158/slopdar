@@ -10,7 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 import Faq from "@/components/Faq";
 
 export const metadata: Metadata = {
-  title: "How Slopdar works — the Slop Score explained",
+  title: "How Slopdar works: the Slop Score explained",
   description:
     "How Slopdar scores any website 0–100 for AI and vibe-coding tells: the three steps, what each tier means, and why it's signals, not proof.",
   alternates: { canonical: "/how-it-works" },

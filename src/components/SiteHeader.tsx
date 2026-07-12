@@ -40,6 +40,7 @@ export default function SiteHeader({ onLogoClick }: { onLogoClick?: () => void }
       </button>
 
       <nav className={`site-nav${open ? " is-open" : ""}`} style={{ fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
+        <Link href="/play" className="h-brandtext" style={{ color: "var(--brand)", textDecoration: "none", fontWeight: 700 }} onClick={close}>Play ▸</Link>
         <Link href="/leaderboard" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }} onClick={close}>Leaderboard</Link>
         <Link href="/how-it-works" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }} onClick={close}>How it works</Link>
         <Link href="/guide/how-to-tell-if-a-website-is-ai-generated" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }} onClick={close}>Spot the tells</Link>
