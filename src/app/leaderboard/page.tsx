@@ -15,11 +15,11 @@ import SiteFooter from "@/components/SiteFooter";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "The Leaderboard — sloppiest and most hand-crafted sites",
+  title: "The Leaderboard: sloppiest and most hand-crafted sites",
   description: "The web's sloppiest (Wall of Shame) and most hand-crafted (Hall of Fame) sites, scored 0–100 by Slopdar. See which sites look AI-generated.",
   alternates: { canonical: "/leaderboard" },
   openGraph: {
-    title: "Slopdar Leaderboard — Wall of Shame & Hall of Fame",
+    title: "Slopdar Leaderboard: Wall of Shame & Hall of Fame",
     description: "The web's sloppiest and most hand-crafted sites, scored 0–100 by Slopdar.",
     url: "/leaderboard",
     type: "website",

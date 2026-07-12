@@ -8,7 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "About Slopdar — who's behind the radar",
+  title: "About Slopdar: who's behind the radar",
   description:
     "Slopdar is a fun radar for AI-generated and vibe-coded websites. I'm Mukund and I built it solo. Paste a link, get a Slop Score, see the receipts.",
   alternates: { canonical: "/about" },
