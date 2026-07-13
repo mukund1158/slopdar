@@ -6,7 +6,8 @@ export default function SiteFooter() {
   return (
     <footer style={{ borderTop: "2px solid var(--ink)", marginTop: 48, padding: "22px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>
       <span>Slopdar runs on the slop stack. We know.</span>
-      <div style={{ display: "flex", gap: 20 }}>
+      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+        <Link href="/guide/how-to-tell-if-a-website-is-ai-generated" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Spot the tells</Link>
         <Link href="/privacy" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Privacy &amp; Terms</Link>
         <a href="https://x.com/mukparekh" target="_blank" rel="noopener" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>@mukparekh</a>
         <span>© 2026</span>

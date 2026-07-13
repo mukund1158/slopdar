@@ -48,7 +48,7 @@ interface FinishResponse {
   players: number | null;
 }
 
-type Phase = "loading" | "playing" | "done";
+type Phase = "loading" | "playing" | "done" | "played";
 
 async function postJSON<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -81,7 +81,11 @@ export default function PlayGame({ loggedIn = false }: { loggedIn?: boolean }) {
     setPhase("loading");
     setArmed(false);
     try {
-      const res = await postJSON<{ token: string; question: MaskedQuestion }>("/api/play/start");
+      const res = await postJSON<{ alreadyPlayedToday: boolean; token?: string; question?: MaskedQuestion }>("/api/play/start");
+      if (res.alreadyPlayedToday || !res.token || !res.question) {
+        setPhase("played");
+        return;
+      }
       setToken(res.token);
       setMarks([]);
       setAnswer(null);
@@ -184,6 +188,19 @@ export default function PlayGame({ loggedIn = false }: { loggedIn?: boolean }) {
 
       {phase === "playing" && question && (
         <Round q={question} answer={answer} armed={armed} timeLeft={timeLeft} onArm={arm} onPick={(id) => pick(id)} onNext={next} busy={busy} />
+      )}
+
+      {phase === "played" && (
+        <div style={{ ...card, borderRadius: 18, padding: "34px 28px", textAlign: "center", boxShadow: "0 7px 0 rgba(0,0,0,.1)", maxWidth: 520, margin: "0 auto" }}>
+          <div style={{ fontSize: 44 }}>✅</div>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(22px,4vw,30px)", letterSpacing: "-.03em", margin: "10px 0 0" }}>You&apos;ve played today.</h2>
+          <p style={{ maxWidth: 400, margin: "10px auto 0", fontSize: 15, lineHeight: 1.5, color: "var(--ink2)" }}>
+            One game a day keeps it fair. Your score is locked on today&apos;s board. Come back tomorrow for a fresh set.
+          </p>
+          <a href="/play/leaderboard" className="h-brand" style={{ ...btnBrand, display: "inline-block", textDecoration: "none", marginTop: 20, fontSize: 15, padding: "13px 26px" }}>
+            See where you rank →
+          </a>
+        </div>
       )}
 
       {phase === "done" && finish && <DoneView finish={finish} marks={marks} loggedIn={loggedIn} token={token} />}
