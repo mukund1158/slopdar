@@ -95,13 +95,14 @@ function maskedQuestion(s: GameSession) {
 }
 
 export interface StartResult {
-  token: string;
-  ranked: boolean;
   alreadyPlayedToday: boolean;
-  question: ReturnType<typeof maskedQuestion>;
+  token?: string;
+  ranked?: boolean;
+  question?: ReturnType<typeof maskedQuestion>;
 }
 
-/** Begin a fresh game. Identity (guest vs logged-in) is fixed here. */
+/** Begin a fresh game. A logged-in player who already has today's result is
+ *  blocked (no new game) so they can't replay after landing on the board. */
 export async function startGame(userId: string | null): Promise<StartResult> {
   const day = todayStr();
 
@@ -116,6 +117,9 @@ export async function startGame(userId: string | null): Promise<StartResult> {
     alreadyPlayedToday = Boolean(existing);
     excludeCheckId = user?.websiteCheckId ?? null;
   }
+
+  // Already on today's board: no replay.
+  if (userId && alreadyPlayedToday) return { alreadyPlayedToday: true };
 
   const game = await generateGame({ day: dayDate(day), excludeCheckId });
   const session: GameSession = {
