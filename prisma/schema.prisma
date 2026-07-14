@@ -98,7 +98,7 @@ model User {
   lastPlayedDay  DateTime? @db.Date // drives streak continuity
 
   // Founder profile
-  bio      String? @db.VarChar(200)
+  bio      String? @db.VarChar(1000)
   role     String? @db.VarChar(48) // "indie founder", "solo dev", etc.
   twitter  String? @db.VarChar(100)
   linkedin String? @db.VarChar(200)
