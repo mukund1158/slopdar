@@ -5,7 +5,7 @@
 // the home screen in place; server pages omit it and the logo is a normal link.
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { MONO } from "@/components/slopdar/ui";
 
 const itemStyle: React.CSSProperties = {
@@ -112,9 +112,7 @@ export default function SiteHeader({ onLogoClick }: { onLogoClick?: () => void }
             <button className="h-rowfaint" style={{ ...itemStyle, borderTop: "1px solid var(--line)" }} onClick={() => { close(); signOut(); }}>Sign out</button>
           </Dropdown>
         ) : (
-          <button onClick={() => signIn("google")} className="h-brandtext" style={{ background: "none", border: 0, padding: 0, cursor: "pointer", fontFamily: MONO, fontSize: 12, color: "var(--brand)", fontWeight: 700 }}>
-            Log in
-          </button>
+          <Link href="/signin" className="h-brandtext" style={{ color: "var(--brand)", textDecoration: "none", fontWeight: 700 }} onClick={close}>Log in</Link>
         )}
       </nav>
     </header>

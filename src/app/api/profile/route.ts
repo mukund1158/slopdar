@@ -5,9 +5,27 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getSessionUserId } from "@/lib/auth";
 import { MAX_PRODUCTS, normalizeProductUrl } from "@/lib/founder";
+import { runCheck } from "@/server/check-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** Scan the primary product in the background so it can be featured in the game.
+ *  Long-running server (self-hosted), so a detached promise finishes after the
+ *  response. Sets websiteCheckId only if the scan produced a usable screenshot. */
+function featurePrimaryProduct(userId: string, url: string): void {
+  void (async () => {
+    try {
+      const res = await runCheck(url);
+      const check = await db.check.findUnique({ where: { slug: res.slug }, select: { id: true, screenshot: true, gameHidden: true } });
+      if (check?.screenshot && !check.gameHidden) {
+        await db.user.update({ where: { id: userId }, data: { websiteCheckId: check.id } });
+      }
+    } catch (err) {
+      console.error("[featurePrimaryProduct] scan failed:", err);
+    }
+  })();
+}
 
 const blank = (max: number) => z.string().max(max).optional().transform((v) => (v ?? "").trim());
 
@@ -21,7 +39,7 @@ const ProductIn = z.object({
   isPrimary: z.boolean().optional(),
 });
 const Body = z.object({
-  bio: blank(200),
+  bio: blank(1000),
   role: blank(48),
   twitter: blank(100),
   linkedin: blank(200),
@@ -56,6 +74,7 @@ export async function POST(req: Request) {
 
   const items = body.products.slice(0, MAX_PRODUCTS);
   const existing = await db.product.findMany({ where: { userId }, select: { id: true } });
+  const before = await db.user.findUnique({ where: { id: userId }, select: { websiteUrl: true, websiteCheckId: true } });
   const keepIds = new Set(items.filter((p) => p.id).map((p) => p.id));
   const toDelete = existing.filter((e) => !keepIds.has(e.id)).map((e) => e.id);
 
@@ -94,9 +113,18 @@ export async function POST(req: Request) {
         twitter: body.twitter || null,
         linkedin: body.linkedin || null,
         websiteUrl: primaryUrl, // the primary product is the game entry
+        // keep the featured Check only if the primary URL is unchanged; otherwise
+        // clear it and re-scan below.
+        websiteCheckId: primaryUrl && before?.websiteUrl === primaryUrl ? before.websiteCheckId : null,
       },
     });
   });
+
+  // New or changed primary product → scan it in the background so it can be
+  // featured in the game once it has a screenshot.
+  if (primaryUrl && !(before?.websiteUrl === primaryUrl && before?.websiteCheckId)) {
+    featurePrimaryProduct(userId, primaryUrl);
+  }
 
   return NextResponse.json({ ok: true });
 }

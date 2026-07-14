@@ -1,6 +1,7 @@
 // Public founder page. Shows who they are and their products, with links back
 // to each one. Links are nofollow until the founder has earned dofollow.
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { hasEarnedDofollow } from "@/lib/founder";
@@ -19,13 +20,13 @@ async function getFounder(handle: string) {
   const user = await db.user.findUnique({
     where: { handle },
     select: {
-      id: true, handle: true, name: true, image: true, bio: true, role: true, twitter: true, linkedin: true, bestStreak: true,
+      id: true, handle: true, name: true, image: true, bio: true, role: true, twitter: true, linkedin: true, bestStreak: true, createdAt: true,
       products: { where: { hidden: false }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true, url: true, pitch: true, logoUrl: true, category: true, isPrimary: true } },
     },
   });
   if (!user) return null;
   const wins = await db.featuredSite.count({ where: { userId: user.id } });
-  return { user, dofollow: hasEarnedDofollow({ bestStreak: user.bestStreak, wins }) };
+  return { user, wins, dofollow: hasEarnedDofollow({ bestStreak: user.bestStreak, wins }) };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
@@ -43,8 +44,9 @@ export default async function FounderPage({ params }: { params: Promise<{ handle
   const { handle } = await params;
   const data = await getFounder(handle);
   if (!data) notFound();
-  const { user, dofollow } = data;
+  const { user, wins, dofollow } = data;
   const rel = dofollow ? "noopener" : "nofollow noopener";
+  const since = new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", fontFamily: SANS, color: "var(--ink)", background: "var(--bg)" }}>
@@ -67,10 +69,21 @@ export default async function FounderPage({ params }: { params: Promise<{ handle
             </div>
           </div>
           <div style={{ padding: "18px 22px" }}>
-            {user.bio && <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5, color: "var(--ink)" }}>{user.bio}</p>}
-            <div style={{ display: "flex", gap: 16, marginTop: user.bio ? 12 : 0, fontFamily: MONO, fontSize: 12 }}>
-              {user.twitter && <a href={twitterHref(user.twitter)} target="_blank" rel={rel} className="h-brandtext" style={{ color: "var(--ink2)", textDecoration: "none" }}>X ↗</a>}
-              {user.linkedin && <a href={linkedinHref(user.linkedin)} target="_blank" rel={rel} className="h-brandtext" style={{ color: "var(--ink2)", textDecoration: "none" }}>LinkedIn ↗</a>}
+            {user.bio ? (
+              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "var(--ink)", whiteSpace: "pre-wrap" }}>{user.bio}</p>
+            ) : (
+              <p style={{ margin: 0, fontSize: 14, color: "var(--mut)", fontStyle: "italic" }}>No bio yet.</p>
+            )}
+            {(user.twitter || user.linkedin) && (
+              <div style={{ display: "flex", gap: 16, marginTop: 12, fontFamily: MONO, fontSize: 12 }}>
+                {user.twitter && <a href={twitterHref(user.twitter)} target="_blank" rel={rel} className="h-brandtext" style={{ color: "var(--ink2)", textDecoration: "none" }}>X ↗</a>}
+                {user.linkedin && <a href={linkedinHref(user.linkedin)} target="_blank" rel={rel} className="h-brandtext" style={{ color: "var(--ink2)", textDecoration: "none" }}>LinkedIn ↗</a>}
+              </div>
+            )}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 18, marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)", fontFamily: MONO, fontSize: 12, color: "var(--ink2)" }}>
+              <span>🔥 best streak <b style={{ color: "var(--ink)" }}>{user.bestStreak}</b></span>
+              <span>🏆 featured <b style={{ color: "var(--ink)" }}>{wins}×</b></span>
+              <span style={{ color: "var(--mut)" }}>since {since}</span>
             </div>
           </div>
         </div>
@@ -119,6 +132,14 @@ export default async function FounderPage({ params }: { params: Promise<{ handle
             ? "This founder earned dofollow links by winning the daily game."
             : "Links are nofollow. Win a day or keep a 3-day streak to make them dofollow."}
         </p>
+
+        <div style={{ ...card, borderRadius: 16, padding: "20px", textAlign: "center", marginTop: 20, boxShadow: "0 5px 0 rgba(0,0,0,.09)" }}>
+          <div style={{ fontWeight: 900, fontSize: 18, letterSpacing: "-.02em" }}>Think you can spot the slop?</div>
+          <p style={{ fontSize: 13.5, color: "var(--ink2)", margin: "6px 0 14px" }}>Play the daily game, climb the founders board, and get your own site featured.</p>
+          <Link href="/play" style={{ display: "inline-block", background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 11, fontFamily: SANS, fontWeight: 800, fontSize: 15, padding: "12px 24px", textDecoration: "none", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>
+            Play today&apos;s game →
+          </Link>
+        </div>
       </main>
       <SiteFooter />
     </div>

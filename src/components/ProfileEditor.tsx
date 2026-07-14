@@ -130,8 +130,15 @@ export default function ProfileEditor() {
       {/* Founder */}
       <div style={{ ...card, borderRadius: 16, padding: 20 }}>
         <div style={{ fontWeight: 900, fontSize: 18, marginBottom: 14 }}>About you</div>
-        <label style={labelStyle}>One-line bio</label>
-        <input value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} placeholder="Solo founder shipping tools for indie devs" style={inputStyle} />
+        <label style={labelStyle}>Bio <span style={{ color: "var(--mut)", textTransform: "none", letterSpacing: 0 }}>({bio.length}/1000)</span></label>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          maxLength={1000}
+          rows={5}
+          placeholder="Tell people who you are and what you build. This shows on your public page."
+          style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+        />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14, marginTop: 14 }}>
           <div>
             <label style={labelStyle}>Role</label>
