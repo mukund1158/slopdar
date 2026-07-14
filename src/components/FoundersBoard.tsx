@@ -6,11 +6,13 @@
 // landing page and the game leaderboard page (which also claims a just-finished
 // guest game on login via the claimToken).
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { SANS, MONO, card, monoLabel } from "@/components/slopdar/ui";
 
 export interface BoardRow {
   rank: number;
   handle: string;
+  product: string | null;
   score: number;
   correct: number;
   streak: number;
@@ -42,13 +44,19 @@ function RowLine({ r }: { r: BoardRow }) {
       <span style={{ fontFamily: MONO, fontSize: 13, color: "var(--mut)", minWidth: 30, textAlign: "center" }}>
         {medal(r.rank) ?? `#${r.rank}`}
       </span>
-      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 800, fontSize: 15 }}>
-        {r.handle}
-        {r.you && (
-          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--brand)", marginLeft: 8 }}>you</span>
-        )}
-        {reward && (
-          <span style={{ fontFamily: MONO, fontSize: 10, color: "var(--mut)", marginLeft: 8 }}>· site featured tomorrow</span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <Link href={`/u/${r.handle}`} className="h-brandtext" style={{ fontWeight: 800, fontSize: 15, color: "var(--ink)", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {r.handle}
+          </Link>
+          {r.you && <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--brand)" }}>you</span>}
+        </span>
+        {(r.product || reward) && (
+          <span style={{ display: "block", fontFamily: MONO, fontSize: 11, color: "var(--mut)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>
+            {r.product}
+            {r.product && reward ? " · " : ""}
+            {reward ? "featured tomorrow" : ""}
+          </span>
         )}
       </span>
       {r.streak > 1 && <span style={{ fontFamily: MONO, fontSize: 11.5, color: "var(--mut)", flexShrink: 0 }}>🔥{r.streak}</span>}

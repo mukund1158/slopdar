@@ -12,11 +12,14 @@ import { FEATURED_PER_DAY } from "./play-config";
 export interface BoardRow {
   rank: number;
   handle: string;
+  product: string | null; // their primary product name, if set
   score: number;
   correct: number;
   streak: number;
   you: boolean;
 }
+
+const primaryProduct = { where: { isPrimary: true, hidden: false }, select: { name: true }, take: 1 } as const;
 
 const dateOnly = (d: Date) => new Date(d.toISOString().slice(0, 10));
 const today = () => dateOnly(new Date());
@@ -35,7 +38,7 @@ export async function todayBoard(
       where: { day },
       orderBy: [...orderByScore],
       take: limit,
-      include: { user: { select: { id: true, handle: true } } },
+      include: { user: { select: { id: true, handle: true, products: primaryProduct } } },
     }),
     db.playResult.count({ where: { day } }),
   ]);
@@ -43,6 +46,7 @@ export async function todayBoard(
   const rows: BoardRow[] = top.map((r, i) => ({
     rank: i + 1,
     handle: r.user.handle ?? "player",
+    product: r.user.products[0]?.name ?? null,
     score: r.score,
     correct: r.correct,
     streak: r.streak,
@@ -53,7 +57,7 @@ export async function todayBoard(
   if (!you && opts.userId) {
     const mine = await db.playResult.findUnique({
       where: { userId_day: { userId: opts.userId, day } },
-      include: { user: { select: { handle: true } } },
+      include: { user: { select: { handle: true, products: primaryProduct } } },
     });
     if (mine) {
       const better = await db.playResult.count({
@@ -65,6 +69,7 @@ export async function todayBoard(
       you = {
         rank: better + 1,
         handle: mine.user.handle ?? "player",
+        product: mine.user.products[0]?.name ?? null,
         score: mine.score,
         correct: mine.correct,
         streak: mine.streak,

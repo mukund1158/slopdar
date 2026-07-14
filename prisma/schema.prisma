@@ -97,14 +97,43 @@ model User {
   bestStreak     Int       @default(0)
   lastPlayedDay  DateTime? @db.Date // drives streak continuity
 
+  // Founder profile
+  bio      String? @db.VarChar(200)
+  role     String? @db.VarChar(48) // "indie founder", "solo dev", etc.
+  twitter  String? @db.VarChar(100)
+  linkedin String? @db.VarChar(200)
+
   saved    SavedSite[]
   results  PlayResult[]
   featured FeaturedSite[]
+  products Product[]
   accounts Account[]
   sessions Session[]
   website  Check?         @relation("UserWebsite", fields: [websiteCheckId], references: [id])
 
   @@index([websiteCheckId])
+}
+
+/// A founder's product shown on their public profile. Up to 3 per user; the
+/// primary one can be featured in the game. Links are nofollow until the
+/// founder earns dofollow (wins a day or keeps an active streak).
+model Product {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @db.VarChar(120)
+  url       String   @db.VarChar(512)
+  pitch     String?  @db.VarChar(160)
+  logoUrl   String?  @db.VarChar(512)
+  category  String?  @db.VarChar(48)
+  isPrimary Boolean  @default(false) // the one that goes in the game
+  hidden    Boolean  @default(false) // moderated out
+  reported  Boolean  @default(false) // flagged for review
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// A site a logged-in user saved to their profile.
