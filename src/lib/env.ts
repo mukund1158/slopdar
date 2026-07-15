@@ -39,6 +39,13 @@ const schema = z.object({
     .enum(["0", "1"])
     .default("0")
     .transform((v) => v === "1"),
+
+  // Google login (Auth.js). Optional so the app still boots without them, but
+  // sign-in stays disabled until all three are set. AUTH_SECRET signs the
+  // session cookie; the other two come from the Google Cloud OAuth client.
+  AUTH_SECRET: z.string().min(1).optional(),
+  AUTH_GOOGLE_ID: z.string().min(1).optional(),
+  AUTH_GOOGLE_SECRET: z.string().min(1).optional(),
 });
 
 const parsed = schema.safeParse(process.env);

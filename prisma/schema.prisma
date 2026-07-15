@@ -12,39 +12,44 @@ datasource db {
 
 /// One scan of one URL. `slug` is the public, shareable id (e.g. /r/stripe.com).
 model Check {
-  id          String   @id @default(cuid())
-  url         String   @db.VarChar(2048) // full URL (not indexed — can exceed the utf8mb4 key limit)
-  urlHash     String   @unique @db.Char(64) // sha256(url) — the canonical uniqueness key
-  slug        String   @unique @db.VarChar(255)
-  host        String   @db.VarChar(255)
-  finalUrl    String?  @db.VarChar(2048)
-  score       Int // 0–100 Slop Score
-  tier        String   @db.VarChar(64) // Hand-Crafted | Suspiciously Clean | Vibe-Coded | Pure Slop
-  screenshot  String?  @db.VarChar(512) // public path or null if capture failed
-  title       String?  @db.VarChar(512)
-  scanError   String?  @db.Text // populated when the scan partially failed
-  checkCount  Int      @default(1) // how many times this URL has been scanned
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  url        String   @db.VarChar(2048) // full URL (not indexed — can exceed the utf8mb4 key limit)
+  urlHash    String   @unique @db.Char(64) // sha256(url) — the canonical uniqueness key
+  slug       String   @unique @db.VarChar(255)
+  host       String   @db.VarChar(255)
+  finalUrl   String?  @db.VarChar(2048)
+  score      Int // 0–100 Slop Score
+  tier       String   @db.VarChar(64) // Hand-Crafted | Suspiciously Clean | Vibe-Coded | Pure Slop
+  screenshot String?  @db.VarChar(512) // public path or null if capture failed
+  title      String?  @db.VarChar(512)
+  scanError  String?  @db.Text // populated when the scan partially failed
+  checkCount Int      @default(1) // how many times this URL has been scanned
+  gameHidden Boolean  @default(false) // excluded from the daily game (unsafe/reported content)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   signals    Signal[]
   techStacks TechStack[]
   savedBy    SavedSite[]
+  featuredIn FeaturedSite[]
+  websiteOf  User[]         @relation("UserWebsite")
 
   @@index([score])
   @@index([createdAt])
+  // Fast pool draw for the game: filter out hidden sites, then band by score.
+  @@index([gameHidden, score])
 }
 
 /// A matched detection signal — "the receipts" shown on the result page.
 model Signal {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   checkId     String
-  signalId    String   @db.VarChar(128) // stable rule id, e.g. "fingerprint.v0"
-  category    String   @db.VarChar(64)
-  label       String   @db.VarChar(255)
-  description String   @db.Text
+  signalId    String  @db.VarChar(128) // stable rule id, e.g. "fingerprint.v0"
+  category    String  @db.VarChar(64)
+  label       String  @db.VarChar(255)
+  description String  @db.Text
   weight      Int
-  evidence    String?  @db.Text // snippet / matched value, when available
+  evidence    String? @db.Text // snippet / matched value, when available
 
   check Check @relation(fields: [checkId], references: [id], onDelete: Cascade)
 
@@ -75,15 +80,60 @@ model GuessStat {
   skips   Int      @default(0)
 }
 
-/// Optional account (Google via Auth.js — wired up in a later phase).
+/// Account (Google via Auth.js). Extended with the daily-game profile.
 model User {
+  id            String    @id @default(cuid())
+  email         String    @unique @db.VarChar(320)
+  emailVerified DateTime?
+  name          String?   @db.VarChar(255)
+  image         String?   @db.VarChar(512)
+  createdAt     DateTime  @default(now())
+
+  // Daily game profile
+  handle         String?   @unique @db.VarChar(32) // public name on the leaderboard; never the email
+  websiteUrl     String?   @db.VarChar(512) // the site the player wants shown when they win
+  websiteCheckId String? // that site's scanned Check, once scanned
+  currentStreak  Int       @default(0) // days played in a row
+  bestStreak     Int       @default(0)
+  lastPlayedDay  DateTime? @db.Date // drives streak continuity
+
+  // Founder profile
+  bio      String? @db.VarChar(1000)
+  role     String? @db.VarChar(48) // "indie founder", "solo dev", etc.
+  twitter  String? @db.VarChar(100)
+  linkedin String? @db.VarChar(200)
+
+  saved    SavedSite[]
+  results  PlayResult[]
+  featured FeaturedSite[]
+  products Product[]
+  accounts Account[]
+  sessions Session[]
+  website  Check?         @relation("UserWebsite", fields: [websiteCheckId], references: [id])
+
+  @@index([websiteCheckId])
+}
+
+/// A founder's product shown on their public profile. Up to 3 per user; the
+/// primary one can be featured in the game. Links are nofollow until the
+/// founder earns dofollow (wins a day or keeps an active streak).
+model Product {
   id        String   @id @default(cuid())
-  email     String   @unique @db.VarChar(320)
-  name      String?  @db.VarChar(255)
-  image     String?  @db.VarChar(512)
+  userId    String
+  name      String   @db.VarChar(120)
+  url       String   @db.VarChar(512)
+  pitch     String?  @db.VarChar(160)
+  logoUrl   String?  @db.VarChar(512)
+  category  String?  @db.VarChar(48)
+  isPrimary Boolean  @default(false) // the one that goes in the game
+  hidden    Boolean  @default(false) // moderated out
+  reported  Boolean  @default(false) // flagged for review
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 
-  saved SavedSite[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// A site a logged-in user saved to their profile.
@@ -98,4 +148,78 @@ model SavedSite {
 
   @@unique([userId, checkId])
   @@index([userId])
+}
+
+/// One finished scored game. Powers every leaderboard. One per user per day.
+model PlayResult {
+  id         String   @id @default(cuid())
+  userId     String
+  day        DateTime @db.Date
+  correct    Int // 0..5 answers right
+  score      Int // 0..100 total score
+  streak     Int // longest run of correct answers within the game
+  durationMs Int // total time taken (server-measured), tie-breaker
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@index([day, score])
+}
+
+/// A winner's website locked in to appear in a given day's games (the reward).
+model FeaturedSite {
+  id        String   @id @default(cuid())
+  day       DateTime @db.Date // the day these sites are shown to players
+  checkId   String
+  userId    String
+  rank      Int // 1..3, the winning place that earned it
+  createdAt DateTime @default(now())
+
+  check Check @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([day, rank])
+  @@index([day])
+}
+
+// ── Auth.js (next-auth) Prisma adapter tables ──────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

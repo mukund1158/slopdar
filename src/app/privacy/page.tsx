@@ -7,7 +7,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "Privacy & Terms — the short version",
+  title: "Privacy & Terms: the short version",
   description: "What Slopdar does with the URLs you scan, what data it keeps, and what the Slop Score actually means. Signals, not proof.",
   alternates: { canonical: "/privacy" },
 };

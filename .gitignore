@@ -23,6 +23,8 @@ next-env.d.ts
 # runtime artifacts
 /public/screenshots/*
 !/public/screenshots/.gitkeep
+/public/logos/*
+!/public/logos/.gitkeep
 
 # misc
 .DS_Store
