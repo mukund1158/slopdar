@@ -17,26 +17,31 @@ export interface QuestionType {
 
 // Bands are chosen with a clear gap between them so the answer is obvious to a
 // fair player. Score line: 0..50 is built, 51..100 is slop (see tiers.ts).
+//
+// Real scanned sites cluster heavily on the built (low) end: the vast majority
+// score under 50 and genuinely sloppy sites are rare. So the "slop" bands treat
+// 51+ as the slop side (rather than 76+/85+, which the pool can't fill), while
+// keeping a clear score gap from the built band so answers stay unambiguous.
 export const QUESTION_TYPES: readonly QuestionType[] = [
   {
     id: "which-slop",
     prompt: "Which one is slop?",
     bandA: [0, 25], // clearly hand-built
-    bandB: [76, 100], // clearly slop
+    bandB: [51, 100], // slop
     target: "higher",
   },
   {
     id: "which-built",
     prompt: "Which one is built by hand?",
     bandA: [0, 25],
-    bandB: [76, 100],
+    bandB: [51, 100],
     target: "lower",
   },
   {
     id: "which-worse",
     prompt: "Which one is worse?",
-    bandA: [51, 60], // mild slop
-    bandB: [85, 100], // heavy slop
+    bandA: [26, 40], // suspiciously clean, but still built
+    bandB: [55, 100], // clearly slop
     target: "higher",
   },
   {
@@ -50,7 +55,7 @@ export const QUESTION_TYPES: readonly QuestionType[] = [
     id: "which-band-20-30",
     prompt: "Which one scores around 20 to 30?",
     bandA: [20, 30], // the target site
-    bandB: [70, 100], // clearly not in the band
+    bandB: [55, 100], // clearly not in the band
     target: { near: 25 },
   },
 ] as const;
