@@ -13,6 +13,8 @@ export interface BoardRow {
   rank: number;
   handle: string;
   product: string | null;
+  productUrl: string | null;
+  productDofollow: boolean;
   score: number;
   correct: number;
   streak: number;
@@ -51,15 +53,28 @@ function RowLine({ r }: { r: BoardRow }) {
           </Link>
           {r.you && <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--brand)" }}>you</span>}
         </span>
-        {(r.product || reward) && (
-          <span style={{ display: "block", fontFamily: MONO, fontSize: 11, color: "var(--mut)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>
-            {r.product}
-            {r.product && reward ? " · " : ""}
-            {reward ? "featured tomorrow" : ""}
+        {reward && (
+          <span style={{ display: "block", fontFamily: MONO, fontSize: 11, color: "var(--mut)", marginTop: 2 }}>
+            featured tomorrow
           </span>
         )}
       </span>
-      {r.streak > 1 && <span style={{ fontFamily: MONO, fontSize: 11.5, color: "var(--mut)", flexShrink: 0 }}>🔥{r.streak}</span>}
+      <span style={{ flex: 1, minWidth: 0 }}>
+        {r.product && r.productUrl ? (
+          <a
+            href={r.productUrl}
+            target="_blank"
+            rel={r.productDofollow ? "noopener" : "nofollow noopener"}
+            className="h-brandtext"
+            style={{ display: "block", fontFamily: MONO, fontSize: 12.5, color: "var(--ink2)", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            title={r.productDofollow ? "Dofollow link" : "Nofollow link"}
+          >
+            {r.product} <span style={{ color: "var(--brand)" }}>↗</span>
+          </a>
+        ) : (
+          <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>—</span>
+        )}
+      </span>
       <span style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", flexShrink: 0 }}>{r.correct}/5</span>
       <span style={{ fontWeight: 900, fontSize: 22, letterSpacing: "-.03em", color: "var(--ink)", minWidth: 42, textAlign: "right" }}>{r.score}</span>
     </div>
@@ -108,8 +123,10 @@ export function BoardTable({ board }: { board: Board | null }) {
 }
 
 /** Self-fetching board. If given a claimToken, it locks that just-finished
- *  guest game to the signed-in user first, then loads the board. */
-export default function FoundersBoard({ claimToken }: { claimToken?: string }) {
+ *  guest game to the signed-in user first, then loads the board. `max` caps the
+ *  rows shown (e.g. a top 5 on the landing page); `showLabel` toggles the
+ *  built-in header when the surrounding page already has a title. */
+export default function FoundersBoard({ claimToken, max, showLabel = true }: { claimToken?: string; max?: number; showLabel?: boolean }) {
   const [board, setBoard] = useState<Board | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -131,10 +148,12 @@ export default function FoundersBoard({ claimToken }: { claimToken?: string }) {
     };
   }, [claimToken]);
 
+  const shown = board && max ? { ...board, rows: board.rows.slice(0, max) } : board;
+
   return (
     <div>
-      <div style={{ ...monoLabel, marginBottom: 10 }}>The founders board</div>
-      <BoardTable board={board} />
+      {showLabel && <div style={{ ...monoLabel, marginBottom: 10 }}>The founders board</div>}
+      <BoardTable board={shown} />
     </div>
   );
 }
