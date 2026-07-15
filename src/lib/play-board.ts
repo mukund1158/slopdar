@@ -7,19 +7,52 @@
 // The reward: each day's top 3 get their own website shown in the NEXT day's
 // games. lockFeaturedForDay picks tomorrow's featured sites from today's winners.
 import { db } from "@/lib/db";
+import { hasEarnedDofollow } from "@/lib/founder";
 import { FEATURED_PER_DAY } from "./play-config";
 
 export interface BoardRow {
   rank: number;
   handle: string;
   product: string | null; // their primary product name, if set
+  productUrl: string | null; // link to that product
+  productDofollow: boolean; // true once they've earned a dofollow link
   score: number;
   correct: number;
   streak: number;
   you: boolean;
 }
 
-const primaryProduct = { where: { isPrimary: true, hidden: false }, select: { name: true }, take: 1 } as const;
+const primaryProduct = { where: { isPrimary: true, hidden: false }, select: { name: true, url: true }, take: 1 } as const;
+const boardUser = { select: { id: true, handle: true, bestStreak: true, products: primaryProduct } } as const;
+
+type ResultWithUser = {
+  score: number;
+  correct: number;
+  streak: number;
+  user: { id: string; handle: string | null; bestStreak: number; products: { name: string; url: string }[] };
+};
+
+/** How many times each user has been featured (a win → dofollow), keyed by id. */
+async function winsByUser(ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+  const rows = await db.featuredSite.groupBy({ by: ["userId"], where: { userId: { in: ids } }, _count: { _all: true } });
+  return new Map(rows.map((w) => [w.userId, w._count._all]));
+}
+
+function toRow(r: ResultWithUser, rank: number, wins: number, viewerId?: string | null): BoardRow {
+  const p = r.user.products[0];
+  return {
+    rank,
+    handle: r.user.handle ?? "player",
+    product: p?.name ?? null,
+    productUrl: p?.url ?? null,
+    productDofollow: !!p && hasEarnedDofollow({ bestStreak: r.user.bestStreak, wins }),
+    score: r.score,
+    correct: r.correct,
+    streak: r.streak,
+    you: viewerId ? r.user.id === viewerId : false,
+  };
+}
 
 const dateOnly = (d: Date) => new Date(d.toISOString().slice(0, 10));
 const today = () => dateOnly(new Date());
@@ -38,26 +71,19 @@ export async function todayBoard(
       where: { day },
       orderBy: [...orderByScore],
       take: limit,
-      include: { user: { select: { id: true, handle: true, products: primaryProduct } } },
+      include: { user: boardUser },
     }),
     db.playResult.count({ where: { day } }),
   ]);
 
-  const rows: BoardRow[] = top.map((r, i) => ({
-    rank: i + 1,
-    handle: r.user.handle ?? "player",
-    product: r.user.products[0]?.name ?? null,
-    score: r.score,
-    correct: r.correct,
-    streak: r.streak,
-    you: opts.userId ? r.user.id === opts.userId : false,
-  }));
+  const wins = await winsByUser(top.map((r) => r.user.id));
+  const rows: BoardRow[] = top.map((r, i) => toRow(r, i + 1, wins.get(r.user.id) ?? 0, opts.userId));
 
   let you = rows.find((r) => r.you) ?? null;
   if (!you && opts.userId) {
     const mine = await db.playResult.findUnique({
       where: { userId_day: { userId: opts.userId, day } },
-      include: { user: { select: { handle: true, products: primaryProduct } } },
+      include: { user: boardUser },
     });
     if (mine) {
       const better = await db.playResult.count({
@@ -66,15 +92,8 @@ export async function todayBoard(
           OR: [{ score: { gt: mine.score } }, { score: mine.score, durationMs: { lt: mine.durationMs } }],
         },
       });
-      you = {
-        rank: better + 1,
-        handle: mine.user.handle ?? "player",
-        product: mine.user.products[0]?.name ?? null,
-        score: mine.score,
-        correct: mine.correct,
-        streak: mine.streak,
-        you: true,
-      };
+      const myWins = (await winsByUser([mine.user.id])).get(mine.user.id) ?? 0;
+      you = toRow(mine, better + 1, myWins, opts.userId);
     }
   }
 
