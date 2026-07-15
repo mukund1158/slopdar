@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { SessionProvider } from "next-auth/react";
 import { archivo, plexMono } from "@/lib/fonts";
 import { env } from "@/lib/env";
 import "@/styles/globals.css";
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${archivo.variable} ${plexMono.variable}`}>
       <body>
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         {/* Google Analytics (GA4) */}
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
         <Script id="ga4-init" strategy="afterInteractive">

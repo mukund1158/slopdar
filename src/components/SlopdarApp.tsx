@@ -15,6 +15,8 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import LaunchBadges from "@/components/LaunchBadges";
 import WeeklyWinnerCard from "@/components/WeeklyWinnerCard";
+import PlayGame from "@/components/PlayGame";
+import FoundersBoard from "@/components/FoundersBoard";
 
 type Screen = "home" | "scanning" | "result" | "unreachable";
 
@@ -432,6 +434,30 @@ export default function SlopdarApp() {
       </section>
 
       {ticker}
+
+      <section style={{ ...sectionPad }} id="play">
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
+          <div>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(30px,4.8vw,46px)", letterSpacing: "-.03em", margin: 0 }}>Spot the slop</h2>
+            <div style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", marginTop: 5 }}>The daily game. Two sites, one question, ten seconds.</div>
+          </div>
+          <Link href="/play/leaderboard" className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Leaderboard →</Link>
+        </div>
+        <div>
+          <PlayGame />
+        </div>
+      </section>
+
+      <section style={{ ...sectionPad }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
+          <div>
+            <h2 style={{ fontWeight: 900, fontSize: "clamp(30px,4.8vw,46px)", letterSpacing: "-.03em", margin: 0 }}>Founder leaderboard</h2>
+            <div style={{ fontFamily: MONO, fontSize: 12, color: "var(--mut)", marginTop: 5 }}>Today&apos;s top players. Win to get your product featured.</div>
+          </div>
+          <Link href="/play/leaderboard" className="h-underline" style={{ fontFamily: MONO, fontSize: 12, color: "var(--brand)", textDecoration: "none", fontWeight: 600 }}>Full board →</Link>
+        </div>
+        <FoundersBoard max={5} showLabel={false} />
+      </section>
 
       <section style={{ ...sectionPad }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
