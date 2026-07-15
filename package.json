@@ -12,6 +12,7 @@
     "scan": "node --env-file=.env --import tsx scripts/scan.ts",
     "dedupe": "node --env-file=.env --import tsx scripts/dedupe-checks.ts",
     "reward-winners": "node --env-file=.env --import tsx scripts/reward-winners.ts",
+    "play-doctor": "node --env-file=.env --import tsx scripts/play-doctor.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
