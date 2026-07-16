@@ -7,9 +7,9 @@ import "@/styles/globals.css";
 
 const GA_ID = "G-3CS2J4ZTD7";
 
-const title = "Slopdar: Is it built or is it slop?";
+const title = "Slopdar: Free AI Website Detector. Built or Slop?";
 const description =
-  "Paste any website link and get a Slop Score (0–100): hand-coded by a real dev, or vibe-coded / AI-generated? Receipts included.";
+  "Free AI website detector. Paste any link and get a Slop Score (0–100): hand-coded by a real dev, or vibe-coded and AI-generated? Receipts included.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.APP_URL),
