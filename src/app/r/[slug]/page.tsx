@@ -13,6 +13,8 @@ import { categoryLabel } from "@/lib/categories";
 import { SANS, MONO } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import FixItSection from "@/components/FixItSection";
+import { fixableSignals } from "@/scanner/fixes";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +51,8 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
 
   const tier = tierOf(check.score);
   const tells = check.signals.filter((s) => s.weight > 0).sort((a, b) => b.weight - a.weight);
+  const fixSignals = check.signals.map((s) => ({ id: s.signalId, label: s.label, weight: s.weight, evidence: s.evidence ?? undefined }));
+  const hasFixes = !check.scanError && fixableSignals(fixSignals).length > 0;
   const roast = pickRoast(tier.label, check.slug, tells.map((t) => t.signalId));
   const human = check.signals.filter((s) => s.weight < 0);
   const ang = (check.score / 100) * 360;
@@ -95,7 +99,10 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
               <div style={{ background: "var(--card)", border: "2.5px solid var(--ink)", borderRadius: 14, padding: "18px 20px", marginTop: 16, boxShadow: "0 6px 0 rgba(0,0,0,.12)" }}>
                 <p style={{ margin: 0, fontSize: 19, lineHeight: 1.34, fontWeight: 600 }}>&ldquo;{roast}&rdquo;</p>
               </div>
-              <Link href="/" style={{ display: "inline-block", marginTop: 16, background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 11, fontWeight: 800, fontSize: 14, padding: "12px 18px", textDecoration: "none", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>Scan your own site →</Link>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
+                <Link href="/" style={{ display: "inline-block", background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 11, fontWeight: 800, fontSize: 14, padding: "12px 18px", textDecoration: "none", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>Scan your own site →</Link>
+                {hasFixes && <a href="#fix-it" style={{ display: "inline-block", background: "var(--card)", color: "var(--ink)", border: "2px solid var(--ink)", borderRadius: 11, fontWeight: 800, fontSize: 14, padding: "12px 18px", textDecoration: "none", boxShadow: "0 4px 0 rgba(0,0,0,.14)" }}>Fix your slop 🔧</a>}
+              </div>
             </div>
           </div>
         </section>
@@ -162,6 +169,8 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
             )}
             <p style={{ margin: "15px 0 0", fontSize: 13, color: "var(--mut)", lineHeight: 1.55, maxWidth: 640 }}>Slopdar reports <strong style={{ color: "var(--ink2)" }}>signals, not proof</strong>. A high score means a site smells templated, not that no human was ever involved.</p>
           </div>
+
+          {!check.scanError && <FixItSection signals={fixSignals} accentColor={tier.color} />}
         </section>
       </main>
 
