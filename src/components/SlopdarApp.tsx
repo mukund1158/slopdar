@@ -147,6 +147,10 @@ export default function SlopdarApp() {
 
   const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number; weekly?: Weekly } | null>(null);
   const [liveCount, setLiveCount] = useState<number | null>(null);
+  // Displayed roast-counter value: counts up from 0 on first load (and eases
+  // to the new total on poll bumps) instead of appearing fully formed.
+  const [displayCount, setDisplayCount] = useState<number | null>(null);
+  const countFromRef = useRef<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const quipRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -371,7 +375,33 @@ export default function SlopdarApp() {
   const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight).filter((w) => w > 0));
   const isSlop = screen === "result" && (result?.score ?? 0) > 75;
 
-  const counterFmt = (liveCount ?? board?.total ?? null) != null ? (liveCount ?? board!.total).toLocaleString("en-US") : "…";
+  const targetCount = liveCount ?? board?.total ?? null;
+
+  // Count the sticker up: 0 → total on first load, old → new on poll bumps.
+  useEffect(() => {
+    if (targetCount == null) return;
+    const from = countFromRef.current ?? 0;
+    if (from === targetCount || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      countFromRef.current = targetCount;
+      setDisplayCount(targetCount);
+      return;
+    }
+    const dur = countFromRef.current == null ? 1400 : 700;
+    const start = performance.now();
+    let raf: number;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const val = Math.round(from + (targetCount - from) * eased);
+      countFromRef.current = val;
+      setDisplayCount(val);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [targetCount]);
+
+  const counterFmt = displayCount != null ? displayCount.toLocaleString("en-US") : "…";
 
   // ───────────────────────────── render helpers ───────────────────────────
   const Header = <SiteHeader onLogoClick={reset} />;
@@ -429,7 +459,18 @@ export default function SlopdarApp() {
               <input ref={inputRef} onKeyDown={onKey} onInput={onInput} placeholder="any-website.com" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", color: "var(--ink)", fontFamily: MONO, fontSize: 15, padding: "17px 10px", outline: "none" }} />
             </div>
             <button className="h-brand" onClick={() => doCheck(inputRef.current?.value ?? "")} style={{ marginTop: 16, background: "var(--brand)", color: "#fff", border: "none", borderRadius: 13, fontFamily: SANS, fontWeight: 900, fontSize: 19, letterSpacing: "-.01em", padding: "17px 38px", cursor: "pointer", animation: "glowpulse 2.6s ease-in-out infinite" }}>Roast it 🔥</button>
-            <div style={{ marginTop: 16, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}><span style={{ color: "var(--ink2)", fontWeight: 600 }}>{counterFmt}</span> sites roasted · we&apos;re not judging (we are)</div>
+            {/* Live tally as a slapped-on sticker (same family as the hero tags
+                and the ticker): ink sticker, brand-orange count, bold italic
+                label. Keyed by the count so it re-pops when the poll bumps it. */}
+            <div style={{ marginTop: 26 }}>
+              <div style={{ display: "inline-block", transform: "rotate(-2.5deg)" }}>
+                <div key={targetCount ?? "loading"} style={{ display: "inline-flex", alignItems: "baseline", gap: 10, background: "var(--ink)", color: "var(--bg)", borderRadius: 11, padding: "12px 22px 14px", boxShadow: "4px 6px 0 rgba(0,0,0,.16)", animation: "popA .35s ease-out" }}>
+                  <span style={{ fontWeight: 900, fontSize: 32, lineHeight: 1, letterSpacing: "-.03em", color: "var(--brand)", fontVariantNumeric: "tabular-nums" }}>{counterFmt}</span>
+                  <span style={{ fontWeight: 800, fontStyle: "italic", fontSize: 16.5, letterSpacing: "-.01em" }}>sites roasted 🔥</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: 12, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>we&apos;re not judging (we are)</div>
           </div>
 
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 9, marginTop: 30 }}>
