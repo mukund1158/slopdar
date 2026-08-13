@@ -17,6 +17,8 @@ import LaunchBadges from "@/components/LaunchBadges";
 import WeeklyWinnerCard from "@/components/WeeklyWinnerCard";
 import PlayGame from "@/components/PlayGame";
 import FoundersBoard from "@/components/FoundersBoard";
+import FixItSection from "@/components/FixItSection";
+import { fixableSignals } from "@/scanner/fixes";
 
 type Screen = "home" | "scanning" | "result" | "unreachable";
 
@@ -27,6 +29,7 @@ interface CheckResult {
   screenshot: string | null; title: string | null;
   signals: Receipt[]; tech: Tech[]; scanError: string | null; scannedAt?: string;
   checkCount?: number; // optional: older cached results predate the field
+  previousScore?: number | null; // score before this scan; shown as a delta on re-scans
 }
 interface LeaderRow { domain: string; slug: string; score: number; checkCount?: number }
 interface WeeklyWinner { domain: string; slug: string; score: number; screenshot: string | null }
@@ -132,6 +135,8 @@ export default function SlopdarApp() {
   const pendingRef = useRef<CheckResult | null>(null);
   const skippedRef = useRef(false);
   const [radarVerdict, setRadarVerdict] = useState<{ correct: boolean; streak: number; called: string; actual: string } | null>(null);
+  // Score before a forced re-scan — fuels the "did the fixes work?" delta chip.
+  const [prevScore, setPrevScore] = useState<number | null>(null);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -142,6 +147,10 @@ export default function SlopdarApp() {
 
   const [board, setBoard] = useState<{ shame: LeaderRow[]; fame: LeaderRow[]; total: number; weekly?: Weekly } | null>(null);
   const [liveCount, setLiveCount] = useState<number | null>(null);
+  // Displayed roast-counter value: counts up from 0 on first load (and eases
+  // to the new total on poll bumps) instead of appearing fully formed.
+  const [displayCount, setDisplayCount] = useState<number | null>(null);
+  const countFromRef = useRef<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const quipRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -238,7 +247,7 @@ export default function SlopdarApp() {
     setScreen("scanning"); setDomain(disp); setResult(null);
     setDisplayScore(0); setRevealed(false); setToneMode("roast"); setRoastIdx(0);
     setShareOpen(false); setEmbedOpen(false); setScanPct(8); setScanQuipIdx(0);
-    setGuess(null); guessRef.current = null; setRadarVerdict(null);
+    setGuess(null); guessRef.current = null; setRadarVerdict(null); setPrevScore(null);
     skippedRef.current = false; pendingRef.current = null; setScanDone(false);
     // Only prompt for websites this browser has never scanned before.
     const prompt = !loadSeenHosts().includes(disp);
@@ -256,6 +265,9 @@ export default function SlopdarApp() {
       if (!res.ok) throw new Error("unreachable");
       const data: CheckResult = await res.json();
       cleanupScan(); setScanPct(100);
+      // Only a deliberate re-scan gets the before/after chip; cached results
+      // carry a stale previousScore from whenever they were last scanned live.
+      if (opts.force && typeof data.previousScore === "number") setPrevScore(data.previousScore);
       markSeenHost(disp); // future scans of this host skip the prediction
       if (!awaitingRef.current || guessRef.current || skippedRef.current) {
         judgeAndReveal(data, guessRef.current, disp);
@@ -363,7 +375,33 @@ export default function SlopdarApp() {
   const maxW = Math.max(1, ...(result?.signals ?? []).map((s) => s.weight).filter((w) => w > 0));
   const isSlop = screen === "result" && (result?.score ?? 0) > 75;
 
-  const counterFmt = (liveCount ?? board?.total ?? null) != null ? (liveCount ?? board!.total).toLocaleString("en-US") : "…";
+  const targetCount = liveCount ?? board?.total ?? null;
+
+  // Count the sticker up: 0 → total on first load, old → new on poll bumps.
+  useEffect(() => {
+    if (targetCount == null) return;
+    const from = countFromRef.current ?? 0;
+    if (from === targetCount || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      countFromRef.current = targetCount;
+      setDisplayCount(targetCount);
+      return;
+    }
+    const dur = countFromRef.current == null ? 1400 : 700;
+    const start = performance.now();
+    let raf: number;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const val = Math.round(from + (targetCount - from) * eased);
+      countFromRef.current = val;
+      setDisplayCount(val);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [targetCount]);
+
+  const counterFmt = displayCount != null ? displayCount.toLocaleString("en-US") : "…";
 
   // ───────────────────────────── render helpers ───────────────────────────
   const Header = <SiteHeader onLogoClick={reset} />;
@@ -421,7 +459,18 @@ export default function SlopdarApp() {
               <input ref={inputRef} onKeyDown={onKey} onInput={onInput} placeholder="any-website.com" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", color: "var(--ink)", fontFamily: MONO, fontSize: 15, padding: "17px 10px", outline: "none" }} />
             </div>
             <button className="h-brand" onClick={() => doCheck(inputRef.current?.value ?? "")} style={{ marginTop: 16, background: "var(--brand)", color: "#fff", border: "none", borderRadius: 13, fontFamily: SANS, fontWeight: 900, fontSize: 19, letterSpacing: "-.01em", padding: "17px 38px", cursor: "pointer", animation: "glowpulse 2.6s ease-in-out infinite" }}>Roast it 🔥</button>
-            <div style={{ marginTop: 16, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}><span style={{ color: "var(--ink2)", fontWeight: 600 }}>{counterFmt}</span> sites roasted · we&apos;re not judging (we are)</div>
+            {/* Live tally as a slapped-on sticker (same family as the hero tags
+                and the ticker): ink sticker, brand-orange count, bold italic
+                label. Keyed by the count so it re-pops when the poll bumps it. */}
+            <div style={{ marginTop: 26 }}>
+              <div style={{ display: "inline-block", transform: "rotate(-2.5deg)" }}>
+                <div key={targetCount ?? "loading"} style={{ display: "inline-flex", alignItems: "baseline", gap: 10, background: "var(--ink)", color: "var(--bg)", borderRadius: 11, padding: "12px 22px 14px", boxShadow: "4px 6px 0 rgba(0,0,0,.16)", animation: "popA .35s ease-out" }}>
+                  <span style={{ fontWeight: 900, fontSize: 32, lineHeight: 1, letterSpacing: "-.03em", color: "var(--brand)", fontVariantNumeric: "tabular-nums" }}>{counterFmt}</span>
+                  <span style={{ fontWeight: 800, fontStyle: "italic", fontSize: 16.5, letterSpacing: "-.01em" }}>sites roasted 🔥</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: 12, fontFamily: MONO, fontSize: 12, color: "var(--mut)" }}>we&apos;re not judging (we are)</div>
           </div>
 
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 9, marginTop: 30 }}>
@@ -601,6 +650,8 @@ export default function SlopdarApp() {
     const signals = result.signals ?? [];
     const tells = signals.filter((s) => s.weight > 0);
     const humanHits = signals.filter((s) => s.weight < 0);
+    const hasFixes = !result.scanError && fixableSignals(signals).length > 0;
+    const scrollToFixes = () => document.getElementById("fix-it")?.scrollIntoView({ behavior: "smooth" });
     return (
       <>
         <section style={{ position: "relative", background: tier.tint, borderBottom: "2px solid var(--ink)" }}>
@@ -624,6 +675,15 @@ export default function SlopdarApp() {
                 </span>
               </div>
             )}
+            {prevScore !== null && (
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                <span style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, background: result.score < prevScore ? "#EAF9F0" : result.score > prevScore ? "#FFECEA" : "var(--card)", border: "2px solid var(--ink)", borderRadius: 9, padding: "9px 15px", boxShadow: "0 3px 0 rgba(0,0,0,.1)" }}>
+                  {result.score < prevScore && `📉 De-slopped: ${prevScore} → ${result.score}. Respect.`}
+                  {result.score > prevScore && `📈 It got worse: ${prevScore} → ${result.score}. Bold move.`}
+                  {result.score === prevScore && `↔ Re-scanned: still ${result.score}. Nothing changed.`}
+                </span>
+              </div>
+            )}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 34, alignItems: "center", justifyContent: "center", textAlign: "center" }}>
               <div style={{ flex: "0 0 auto", animation: "shake .55s ease both" }}>
                 <div style={{ position: "relative", width: 260, height: 260 }}>
@@ -644,6 +704,7 @@ export default function SlopdarApp() {
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
                   <button className="h-brand" onClick={() => { setToneMode("roast"); setRoastIdx((i) => (toneMode === "nice" ? i : i + 1)); setRoastTick((t) => t + 1); }} style={{ ...btnBrand, fontSize: 14, padding: "12px 18px" }}>Roast harder 🔥</button>
+                  {hasFixes && <button className="h-ink" onClick={scrollToFixes} style={{ ...btnGhost, fontSize: 14, padding: "12px 18px" }}>Fix your slop 🔧</button>}
                   <button className="h-ink" onClick={() => { setToneMode((m) => (m === "nice" ? "roast" : "nice")); setRoastTick((t) => t + 1); }} style={{ ...btnGhost, background: toneMode === "nice" ? "#10B95E" : "#fff", color: toneMode === "nice" ? "#fff" : "var(--ink)", fontSize: 14, padding: "12px 18px" }}>{toneMode === "nice" ? "Roast me 🔥" : "Be nice 🕊"}</button>
                   <button className="h-ink" onClick={() => setShareOpen(true)} style={{ ...btnGhost, fontSize: 14, padding: "12px 18px" }}>Share 📸</button>
                   <button className="h-ink" onClick={() => { setEmbedDomain(domain); setEmbedScore(result.score); setEmbedCopied(false); setEmbedOpen(true); }} style={{ ...btnGhost, fontSize: 14, padding: "12px 18px" }}>Get badge 🏷</button>
@@ -726,7 +787,14 @@ export default function SlopdarApp() {
               </>
             )}
             <p style={{ margin: "15px 0 0", fontSize: 13, color: "var(--mut)", lineHeight: 1.55, maxWidth: 640 }}>It&apos;s all in good fun. Slopdar reports <span style={{ color: "var(--ink2)", fontWeight: 600 }}>signals, not proof</span>. A high score means a site smells templated, not that no human was ever involved.</p>
+            {hasFixes && (
+              <button onClick={scrollToFixes} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: "var(--brand)", textDecoration: "underline" }}>
+                Every tell above is fixable · Fix your slop ↓
+              </button>
+            )}
           </div>
+
+          {!result.scanError && <FixItSection signals={signals} accentColor={tier.color} siteSlug={result.slug} siteHost={result.host} />}
         </section>
       </>
     );

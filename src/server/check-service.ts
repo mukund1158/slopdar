@@ -57,6 +57,7 @@ export interface CheckResponse {
   scanError: string | null;
   scannedAt: string; // ISO timestamp of the live scan (preserved across cache hits)
   checkCount: number; // how many times this URL has been roasted
+  previousScore: number | null; // score before this live scan; null on a first scan
   cached: boolean;
 }
 
@@ -108,7 +109,7 @@ export async function runCheck(rawUrl: string, opts: { force?: boolean } = {}): 
     confidence: t.confidence,
   }));
 
-  const existing = await db.check.findUnique({ where: { urlHash }, select: { id: true } });
+  const existing = await db.check.findUnique({ where: { urlHash }, select: { id: true, score: true } });
 
   let saved;
   if (existing) {
@@ -165,6 +166,7 @@ export async function runCheck(rawUrl: string, opts: { force?: boolean } = {}): 
     scanError: result.fetchError ?? null,
     scannedAt: saved.updatedAt.toISOString(),
     checkCount: saved.checkCount,
+    previousScore: existing?.score ?? null,
     cached: false,
   };
 

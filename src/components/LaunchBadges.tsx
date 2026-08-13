@@ -51,6 +51,11 @@ const LAUNCH_BADGES: LaunchBadge[] = [
     embed: <img src="https://dofollow.tools/badge/badge_transparent.svg" alt="Featured on Dofollow.Tools" width={200} height={54} style={{ display: "block" }} />,
   },
   {
+    name: "Peerlist",
+    href: "https://peerlist.io/mukundparekh69/project/slopdar",
+    embed: <img src="https://peerlist.io/api/v1/projects/embed/PRJHEOGBL7ROJJ7QA2BRBMENMP76PB?showUpvote=false&theme=light" alt="Slopdar" style={{ display: "block", width: "auto", height: 72 }} />,
+  },
+  {
     name: "Tiny Startups",
     href: "https://www.tinystartups.com/startup/slopdar",
     bare: true,
