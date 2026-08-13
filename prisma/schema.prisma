@@ -80,6 +80,21 @@ model GuessStat {
   skips   Int      @default(0)
 }
 
+/// Email left by a visitor to unlock the fix prompt. One row per unlock, so
+/// the same email can appear for several scanned sites; `action` says whether
+/// they copied the prompt or just peeked at it.
+model FixPromptLead {
+  id        String   @id @default(cuid())
+  email     String   @db.VarChar(320)
+  slug      String?  @db.VarChar(255) // the report page the prompt belonged to
+  host      String?  @db.VarChar(255)
+  action    String   @db.VarChar(16) // "copy" | "peek"
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
 /// Account (Google via Auth.js). Extended with the daily-game profile.
 model User {
   id            String    @id @default(cuid())

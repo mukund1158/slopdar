@@ -794,7 +794,7 @@ export default function SlopdarApp() {
             )}
           </div>
 
-          {!result.scanError && <FixItSection signals={signals} accentColor={tier.color} />}
+          {!result.scanError && <FixItSection signals={signals} accentColor={tier.color} siteSlug={result.slug} siteHost={result.host} />}
         </section>
       </>
     );

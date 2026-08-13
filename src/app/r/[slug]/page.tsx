@@ -170,7 +170,7 @@ export default async function ResultPage({ params }: { params: Promise<{ slug: s
             <p style={{ margin: "15px 0 0", fontSize: 13, color: "var(--mut)", lineHeight: 1.55, maxWidth: 640 }}>Slopdar reports <strong style={{ color: "var(--ink2)" }}>signals, not proof</strong>. A high score means a site smells templated, not that no human was ever involved.</p>
           </div>
 
-          {!check.scanError && <FixItSection signals={fixSignals} accentColor={tier.color} />}
+          {!check.scanError && <FixItSection signals={fixSignals} accentColor={tier.color} siteSlug={check.slug} siteHost={check.host} />}
         </section>
       </main>
 
