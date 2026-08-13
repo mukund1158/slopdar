@@ -28,6 +28,7 @@ export async function GET() {
 
 - You paste a website URL. Slopdar fetches the public HTML, runs ~50 detection checks, takes a screenshot, and returns a Slop Score (0-100) with the evidence ("the receipts").
 - Higher score = more AI / vibe-coding tells found. It is meant to be fun and shareable, not a definitive verdict.
+- Slopdar is open source (MIT). The full scanner, every signal and weight, is at https://github.com/mukund1158/slopdar
 
 ## The score tiers
 
@@ -59,7 +60,7 @@ Slopdar detects signals, not proof. A high score means a site looks templated, n
 - ${base}/guide/what-is-ai-slop : what "AI slop" means, where the term came from, and how to spot it
 - ${base}/guide/what-is-vibe-coding : what "vibe coding" means, its origin, and how to spot a vibe-coded site
 - ${base}/guide/detect-v0-lovable-bolt-websites : the exact fingerprints v0, Lovable, Bolt, Base44 and Replit leave in a page's source
-- ${base}/about : how it works and FAQ
+- ${base}/how-it-works : how the scoring works, tiers, and FAQ
 - ${base}/r/<domain> : the result page for a scanned site (example: ${base}/r/example.com)
 - ${base}/sitemap.xml : all scanned-site pages
 

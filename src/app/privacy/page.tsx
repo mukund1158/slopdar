@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 const SECTIONS: [string, string, string][] = [
-  ["🔍", "What we collect", "When you scan a URL, we store that URL and its score so the leaderboard and “sites checked” counter work. We keep basic, anonymous analytics. We don't sell your data, and we don't run creepy ad trackers."],
+  ["🔍", "What we collect", "When you scan a URL, we store that URL and its score so the leaderboard and “sites checked” counter work. If you leave your email to unlock the fix prompt, we keep it and use it only for Slopdar updates, and we'll delete it if you ask. We keep basic, anonymous analytics. We don't sell your data, and we don't run creepy ad trackers."],
   ["🌎", "Public URLs only", "Slopdar only looks at publicly available pages, the same HTML your browser sees. We don't log in, bypass paywalls, or touch anything behind authentication. Please don't paste private or internal links."],
   ["🙃", "It's a toy, not a verdict", "The Slop Score is automated, opinionated, and meant for fun. We detect signals, not proof. A high score means a site looks templated, not that no human ever touched it."],
   ["🧹", "Get yourself removed", "Own a site on the leaderboard and want off? Email support@slopdar.com and we'll pull it. By scanning a site you confirm you're cool with its public score appearing here."],
