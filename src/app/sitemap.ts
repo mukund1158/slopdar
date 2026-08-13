@@ -28,7 +28,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/guide/what-is-ai-slop`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/guide/what-is-vibe-coding`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/guide/detect-v0-lovable-bolt-websites`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/about`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.3 },
   ];
 

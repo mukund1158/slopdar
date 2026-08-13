@@ -8,6 +8,10 @@ const nextConfig = {
     // The scanner can pull in large HTML payloads; keep server actions reasonable.
     serverActions: { bodySizeLimit: "2mb" },
   },
+  async redirects() {
+    // /about was removed when Slopdar went open source; keep old links working.
+    return [{ source: "/about", destination: "/how-it-works", permanent: true }];
+  },
 };
 
 export default nextConfig;

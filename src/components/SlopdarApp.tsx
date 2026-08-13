@@ -13,7 +13,6 @@ import { roastCountLine } from "@/lib/roast-count";
 import { SANS, MONO, card, btnBrand, btnGhost } from "@/components/slopdar/ui";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import LaunchBadges from "@/components/LaunchBadges";
 import WeeklyWinnerCard from "@/components/WeeklyWinnerCard";
 import PlayGame from "@/components/PlayGame";
 import FoundersBoard from "@/components/FoundersBoard";
@@ -123,7 +122,6 @@ export default function SlopdarApp() {
   const [scanQuipIdx, setScanQuipIdx] = useState(0);
   const [scanPct, setScanPct] = useState(0);
   // Falls back to the emoji until a real photo exists at /public/mukund.jpg
-  const [founderImgOk, setFounderImgOk] = useState(true);
   // Predict-before-the-reveal state. The refs mirror state so the async
   // doCheck always sees the latest values. When the scan finishes before the
   // user has called it, the result parks in pendingRef and the reveal waits.
@@ -559,31 +557,6 @@ export default function SlopdarApp() {
           ))}
         </div>
       </section>
-
-      <section style={{ ...sectionPad }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 44, alignItems: "center" }}>
-          <div style={{ position: "relative", flex: "0 0 auto", transform: "rotate(-3deg)", background: "var(--card)", border: "2px solid var(--ink)", borderRadius: 4, padding: "10px 10px 40px", boxShadow: "0 8px 0 rgba(0,0,0,.1)", margin: "14px 26px 0 0" }}>
-            <span style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%) rotate(2deg)", width: 92, height: 24, background: "rgba(255,184,31,.75)", borderLeft: "1px dashed rgba(0,0,0,.15)", borderRight: "1px dashed rgba(0,0,0,.15)" }} />
-            <span style={{ position: "absolute", right: -26, top: -14, fontFamily: MONO, fontSize: 10.5, fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", background: "var(--brand)", color: "#fff", padding: "7px 11px", borderRadius: 8, transform: "rotate(8deg)", animation: "wobble 4.6s ease-in-out infinite", boxShadow: "0 4px 0 rgba(0,0,0,.12)" }}>The human</span>
-            {founderImgOk ? (
-              <img src="/mukund.jpg" alt="Mukund, the person who built Slopdar" onError={() => setFounderImgOk(false)} style={{ display: "block", width: 210, aspectRatio: "1", objectFit: "cover" }} />
-            ) : (
-              <div style={{ width: 210, aspectRatio: "1", background: "#FFE9D6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 72 }}>👨‍💻</div>
-            )}
-            <div style={{ position: "absolute", left: 0, right: 0, bottom: 10, textAlign: "center", fontFamily: MONO, fontSize: 11.5, color: "var(--mut)" }}>mukund · est. 2am</div>
-          </div>
-          <div style={{ flex: "1 1 340px", minWidth: 280 }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--mut)" }}>Who&apos;s behind the radar</div>
-            <h2 style={{ fontWeight: 900, fontStyle: "italic", fontSize: "clamp(30px,5vw,46px)", letterSpacing: "-.035em", lineHeight: .95, margin: "8px 0 0" }}>One guy.<br />Zero <span style={{ color: "var(--brand)" }}>slop</span>.</h2>
-            <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink2)", margin: "14px 0 0", maxWidth: 480 }}>Hey, I&apos;m Mukund. I built Slopdar solo: no team, no funding, just me shipping at 2am because I got suspicious of half the landing pages on the internet. If something breaks, that&apos;s also me.</p>
-            <div style={{ marginTop: 18 }}>
-              <Link href="/about" className="h-brandtext" style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: "var(--brand)", textDecoration: "none", borderBottom: "2px solid var(--brand)", paddingBottom: 2 }}>More about me →</Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <LaunchBadges />
 
       <section style={{ ...sectionPad }}>
         <div style={{ ...card, borderRadius: 18, padding: 30, boxShadow: "0 6px 0 rgba(0,0,0,.1)", display: "flex", flexWrap: "wrap", gap: 30, alignItems: "center", justifyContent: "space-between" }}>
