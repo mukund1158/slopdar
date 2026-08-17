@@ -28,7 +28,7 @@ export async function GET() {
 
 - You paste a website URL. Slopdar fetches the public HTML, runs ~50 detection checks, takes a screenshot, and returns a Slop Score (0-100) with the evidence ("the receipts").
 - Higher score = more AI / vibe-coding tells found. It is meant to be fun and shareable, not a definitive verdict.
-- Slopdar is open source (MIT). The full scanner, every signal and weight, is at https://github.com/mukund1158/slopdar
+- Slopdar is open source (MIT). The full scanner, every signal and weight, is at https://github.com/Slopdar/slopdar
 
 ## The score tiers
 

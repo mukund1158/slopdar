@@ -94,7 +94,7 @@ export default function SiteHeader({ onLogoClick }: { onLogoClick?: () => void }
         </Dropdown>
         <Link href="/leaderboard" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }} onClick={close}>Leaderboard</Link>
         <Link href="/how-it-works" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }} onClick={close}>How it works</Link>
-        <a href="https://github.com/mukund1158/slopdar" target="_blank" rel="noopener" className="h-brand" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 9, fontWeight: 700, padding: "6px 12px", textDecoration: "none", boxShadow: "0 3px 0 rgba(0,0,0,.14)" }} onClick={close}>★ Open source</a>
+        <a href="https://github.com/Slopdar/slopdar" target="_blank" rel="noopener" className="h-brand" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--brand)", color: "#fff", border: "2px solid var(--ink)", borderRadius: 9, fontWeight: 700, padding: "6px 12px", textDecoration: "none", boxShadow: "0 3px 0 rgba(0,0,0,.14)" }} onClick={close}>★ Open source</a>
         {user ? (
           <Dropdown
             label={

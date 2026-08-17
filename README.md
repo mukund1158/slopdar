@@ -44,7 +44,7 @@ Every check is cached in MySQL and rate limited per IP through Redis.
 You need **Node 20+**, **MySQL 8** and **Redis**.
 
 ```bash
-git clone https://github.com/mukund1158/slopdar.git
+git clone https://github.com/Slopdar/slopdar.git
 cd slopdar
 npm install                  # also runs prisma generate
 npm run playwright:install   # headless Chromium for screenshots

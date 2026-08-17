@@ -9,7 +9,7 @@ export default function SiteFooter() {
       <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
         <Link href="/guide" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Field guides</Link>
         <Link href="/privacy" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Privacy &amp; Terms</Link>
-        <a href="https://github.com/mukund1158/slopdar" target="_blank" rel="noopener" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Open source ★</a>
+        <a href="https://github.com/Slopdar/slopdar" target="_blank" rel="noopener" className="h-brandtext" style={{ color: "inherit", textDecoration: "none" }}>Open source ★</a>
         <a href="https://x.com/mukparekh" target="_blank" rel="noopener" className="h-brandtext" style={{ color: "inherit", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
           <img src="/mukund.jpg" alt="Mukund" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover", border: "1px solid var(--ink)" }} />
           @mukparekh

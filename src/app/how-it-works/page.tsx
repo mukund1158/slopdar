@@ -39,7 +39,7 @@ const FAQ = [
   { q: "Is the score actually accurate?", a: "It's directional, not gospel. We detect known tells and weight them, so a high score means a site looks templated, not that no human touched it. Treat it as a vibe check with footnotes." },
   { q: "Can it tell exactly which AI tool built a site?", a: "Sometimes. Builders like v0, Lovable and Bolt leave recognisable fingerprints in the markup. When we spot one we name it in the receipts; when we don't, we score on the other tells instead." },
   { q: "My hand-coded site scored high. Why?", a: "Probably because you use a popular stack (Next.js, Tailwind, lucide) or a few common layout patterns. Those are slop signals on average, even when a real person made deliberate choices. It's a roast, not a court ruling." },
-  { q: "Can I see exactly how the scoring works?", a: "Yes. Slopdar is open source, so every signal, weight and fingerprint is public at github.com/mukund1158/slopdar. If you think a rule is unfair, read it, argue with it, or send a pull request." },
+  { q: "Can I see exactly how the scoring works?", a: "Yes. Slopdar is open source, so every signal, weight and fingerprint is public at github.com/Slopdar/slopdar. If you think a rule is unfair, read it, argue with it, or send a pull request." },
   { q: "Do you store the sites I scan?", a: "We keep the URL and its score to power the leaderboard and the counter. We only look at public pages, never anything behind a login." },
   { q: "Is this serious or a joke?", a: "Both. The detection is real, the tone is not. It's built to be fun and shareable first. Please don't fire anyone over a number from a site called Slopdar." },
 ];
