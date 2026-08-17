@@ -1,0 +1,22 @@
+# CI for pushes to main and all pull requests: type-check + the test suite.
+# `npm ci` triggers the postinstall `prisma generate`, which needs no database,
+# and the tests are pure logic (scanner, scoring, url) — no services required.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
