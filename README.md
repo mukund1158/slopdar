@@ -13,6 +13,8 @@ is open source. The code is all here; the roast wall, the scan database and
 the domain stay with me. Run your own copy, poke at the detection rules, or
 send a PR.
 
+![The Slopdar home page: paste a URL, roast it](docs/images/home.png)
+
 ---
 
 ## How it works
@@ -28,6 +30,11 @@ No AI, no API bills. The scanner is pure pattern rules:
 4. Takes a screenshot (Playwright) and renders a shareable roast card.
 
 Every check is cached in MySQL and rate limited per IP through Redis.
+
+Here's what a report looks like. Yes, it's our own site, and yes, it found
+actual lorem ipsum in production:
+
+![Slopdar roasting itself: 47/100, Suspiciously Clean](docs/images/report.png)
 
 ## What's inside
 
